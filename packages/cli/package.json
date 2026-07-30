@@ -1,0 +1,19 @@
+{
+  "name": "@fw/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Command-line demonstration of the engine: a map, a function, a trace.",
+  "bin": {
+    "fw-demo": "./dist/demo.js"
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "rm -rf dist *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@fw/contracts": "workspace:*",
+    "@fw/core-math": "workspace:*",
+    "@fw/physics": "workspace:*"
+  }
+}

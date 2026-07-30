@@ -96,15 +96,16 @@ cours. Commencer sur une base non fusionnée est la première cause de conflit.
 
 ## Phase 6 — Équilibrage, bot, rejeux
 
-| #    | Agent  | Tâche                                                                                     | Dépend de  | État |
-| ---- | ------ | ----------------------------------------------------------------------------------------- | ---------- | ---- |
-| BA-1 | Rules  | Bot simple : famille de fonctions paramétrées, tir choisi par échantillonnage             | RU-8       | ☐    |
-| BA-2 | Rules  | Niveaux de bot et test qu'un bot ne gagne pas au premier tour sur 1 000 graines           | BA-1       | ☐    |
-| BA-3 | QA     | Campagne d'équilibrage : 1 000 parties simulées, statistiques de durée et de premier kill | BA-2       | ☐    |
-| BA-4 | Server | Export de rejeu JSON en fin de partie                                                     | SV-10      | ☐    |
-| BA-5 | Client | Lecture d'un rejeu, pas à pas                                                             | BA-4, CL-6 | ☐    |
-| BA-6 | Rules  | Résolution simultanée : trancher l'ordre des tirs croisés, ADR, puis implémenter          | RU-8       | ☐    |
-| BA-7 | Lead   | Documentation finale, captures, guide de déploiement                                      | tout       | ☐    |
+| #    | Agent   | Tâche                                                                                                                              | Dépend de  | État |
+| ---- | ------- | ---------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---- |
+| BA-1 | Rules   | Bot simple : famille de fonctions paramétrées, tir choisi par échantillonnage                                                      | RU-8       | ☐    |
+| BA-2 | Rules   | Niveaux de bot et test qu'un bot ne gagne pas au premier tour sur 1 000 graines                                                    | BA-1       | ☐    |
+| BA-3 | QA      | Campagne d'équilibrage : 1 000 parties simulées, statistiques de durée et de premier kill                                          | BA-2       | ☐    |
+| BA-8 | Physics | **Plafond de quatre joueurs à lever** : les deux contraintes de placement (ADR 0011) ne sont pas satisfiables à six sièges et plus | PH-7       | ☐    |
+| BA-4 | Server  | Export de rejeu JSON en fin de partie                                                                                              | SV-10      | ☐    |
+| BA-5 | Client  | Lecture d'un rejeu, pas à pas                                                                                                      | BA-4, CL-6 | ☐    |
+| BA-6 | Rules   | Résolution simultanée : trancher l'ordre des tirs croisés, ADR, puis implémenter                                                   | RU-8       | ☐    |
+| BA-7 | Lead    | Documentation finale, captures, guide de déploiement                                                                               | tout       | ☐    |
 
 ---
 
@@ -113,5 +114,15 @@ cours. Commencer sur une base non fusionnée est la première cause de conflit.
 - L'ordre de résolution en mode simultané n'est pas tranché (BA-6). Le champ
   `RuleSet.simultaneousResolution` existe mais aucune implémentation ne le lit.
 - Le format de rejeu partageable n'est pas figé (BA-4).
-- Les polygones convexes sont dans les contrats mais le générateur ne les
-  produira qu'en PH-5 ; jusque-là, seules les cartes JSON peuvent en contenir.
+- **Le générateur plafonne à quatre joueurs** (BA-8). À cinq c'est
+  intermittent, à six et plus les deux contraintes de l'ADR 0011 ne sont pas
+  satisfiables et `generate` refuse. `DEFAULT_RULES.maxPlayers` vaut toujours 8 :
+  un salon de six peut donc être configuré et échouer au démarrage. Décision à
+  prendre — plafonner les salons, ou renoncer à la règle de placement au-delà
+  de quatre et s'en remettre au bouclier.
+- Le générateur ne produit que des rectangles et des disques. Les polygones
+  convexes sont dans les contrats, gérés par les collisions et validés, mais
+  seules les cartes JSON écrites à la main peuvent en contenir.
+- Le tracé ne peut pas revenir sur son auteur : `y = f(x)` s'éloigne de `x₀` de
+  façon monotone. `selfImmunityArc` protège donc du départ, et de rien d'autre,
+  et doit rester supérieur au rayon de hitbox.

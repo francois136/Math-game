@@ -28,15 +28,15 @@ Un champ ajouté « juste pour se dépanner » casse silencieusement cinq voisin
 
 ## 3. Périmètres — deux agents ne touchent jamais le même fichier
 
-| Agent     | Écrit dans                                             | Ne touche jamais    |
-| --------- | ------------------------------------------------------ | ------------------- |
-| Core-Math | `packages/core-math/**`                                | tout le reste       |
-| Physics   | `packages/physics/**`                                  | tout le reste       |
-| Rules     | `packages/rules/**`                                    | tout le reste       |
-| Server    | `packages/server/**`                                   | tout le reste       |
-| Client    | `packages/client/**`                                   | tout le reste       |
-| QA/DevOps | `.github/**`, config racine, `docs/` sauf ADR d'autrui | `packages/*/src/**` |
-| Lead      | `packages/contracts/**`, arbitrage                     | —                   |
+| Agent     | Écrit dans                                                                | Ne touche jamais                                          |
+| --------- | ------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Core-Math | `packages/core-math/**`                                                   | tout le reste                                             |
+| Physics   | `packages/physics/**`                                                     | tout le reste                                             |
+| Rules     | `packages/rules/**`                                                       | tout le reste                                             |
+| Server    | `packages/server/**`                                                      | tout le reste                                             |
+| Client    | `packages/client/**`                                                      | tout le reste                                             |
+| QA/DevOps | `.github/**`, `packages/cli/**`, config racine, `docs/` sauf ADR d'autrui | `packages/{core-math,physics,rules,server,client}/src/**` |
+| Lead      | `packages/contracts/**`, arbitrage                                        | —                                                         |
 
 Fichiers partagés (`package.json` racine, `tsconfig.json` racine, `TASKS.md`,
 `CHANGELOG.md`) : modification autorisée mais **minimale**, une ligne si

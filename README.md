@@ -13,9 +13,20 @@ carte — arrête simplement le tir.
 
 ## État
 
-**Phase 1 : squelette et contrats.** Le moteur n'existe pas encore. Ce qui est
-en place : le monorepo, `@fw/contracts` gelé, la documentation d'architecture et
-la CI. Voir [`TASKS.md`](TASKS.md) pour la suite.
+**Phase 2 : le moteur.** Le langage de fonctions, le tracé et les cartes
+existent et sont testés ; il n'y a encore ni tours, ni éliminations, ni réseau.
+
+```bash
+pnpm install && pnpm run build
+pnpm run demo --seed bravo --f "x^2/40"
+```
+
+Ce qui marche : écrire une fonction, se la voir refuser en français si elle est
+discontinue ou mal formée, la voir tracée sur une carte générée, et savoir
+exactement où et pourquoi le tir s'est arrêté.
+
+Ce qui manque : les tours et la victoire (`@fw/rules`, phase 3), le serveur
+(phase 4), l'interface (phase 5). Voir [`TASKS.md`](TASKS.md).
 
 ## Installation
 

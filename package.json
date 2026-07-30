@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "FunctionWars — turn-based multiplayer game where players eliminate each other by plotting mathematical curves.",
+  "description": "FunctionWars \u2014 turn-based multiplayer game where players eliminate each other by plotting mathematical curves.",
   "license": "UNLICENSED",
   "engines": {
     "node": ">=22",
@@ -24,7 +24,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "build": "tsc --build",
-    "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test"
+    "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test",
+    "demo": "pnpm --filter @fw/cli exec node dist/demo.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
