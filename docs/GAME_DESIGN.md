@@ -72,9 +72,11 @@ separator   = ";" | saut de ligne ;
 - **Constantes** : `pi`, `e`. **Variable** : `x`, la seule.
 - `^` est associatif à droite : `2^3^2 = 2^9`.
 - Le moins unaire est moins prioritaire que la puissance : `-x^2 = -(x^2)`.
-- **Multiplication implicite** : autorisée après un nombre uniquement — `2x`,
-  `2(x+1)`, `3sin(x)` sont valides ; `x x` et `x(2)` ne le sont pas, parce
-  qu'ils se lisent trop facilement comme autre chose.
+- **Multiplication implicite** : autorisée après un littéral — un nombre, `pi`
+  ou `e`. `2x`, `2(x+1)`, `3sin(x)`, `2pi` sont valides ; `x x` et `x(2)` ne le
+  sont pas, parce qu'ils se lisent trop facilement comme autre chose.
+- **Pas de notation scientifique.** `2e5` vaut 2·e·5, pas 200000 : qui écrit
+  `e` dans ce jeu veut le nombre d'Euler, à chaque fois.
 
 ### Fonctions par morceaux
 
@@ -105,7 +107,14 @@ Concrètement, avant le tir :
    limite à droite sont comparées : si elles diffèrent de plus de `ε`
    (`continuityEpsilon`, `1e-6`, avec une tolérance relative pour les grandes
    valeurs), la fonction est refusée.
-3. Le message nomme le point et donne les deux limites, parce que c'est
+3. Et c'est tout : **il n'y a rien d'autre à vérifier**. Toutes les fonctions
+   du langage sont continues sur leur domaine, et somme, produit, quotient et
+   composée de fonctions continues le sont là où elles sont définies. Une
+   expression à un seul morceau est donc continue par théorème, pas par chance.
+   Une discontinuité ne peut apparaître que là où la _définition_ change,
+   c'est-à-dire à un raccord. (Ce théorème dépend de la liste des fonctions :
+   ajouter `floor`, `sign` ou un modulo le casserait.)
+4. Le message nomme le point et donne les deux limites, parce que c'est
    exactement ce qu'il faut savoir pour corriger :
 
    > La fonction est discontinue en x = 2 : elle vaut 4 en arrivant par la
@@ -113,6 +122,11 @@ Concrètement, avant le tir :
    > tirées — raccorde tes morceaux.
 
 Un refus **ne consomme pas le tour**. Le joueur corrige et retire.
+
+Deux cas voisins ne sont **pas** des refus : un raccord où la fonction n'a pas
+de valeur d'un côté est un bord de domaine, et un raccord où les deux limites
+coïncident mais où le point lui-même n'a pas de valeur est un trou. Dans les
+deux cas le tir part et s'arrête là, sans rien refuser.
 
 Une asymptote verticale rencontrée _en cours de tracé_ (`tan`, `1/x`) n'est pas
 un motif de refus : la fonction est continue sur son domaine, et la courbe

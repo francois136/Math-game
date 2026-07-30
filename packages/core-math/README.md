@@ -27,11 +27,14 @@ erreur qui lui explique quoi corriger.
    milliseconde.
 4. **Évaluation** sans exception : hors domaine est une valeur
    (`{ defined: false, failure }`), jamais un `throw`.
-5. **Continuité** — la seule règle de validation du jeu. Aux points de raccord
-   des morceaux, comparaison exacte des limites gauche et droite ; ailleurs,
-   détection des sauts et des pôles avec les tolérances de `TraceParams`.
-   Renvoie **la première** discontinuité, avec un message qui donne `x`, la
-   limite à gauche et la limite à droite.
+5. **Continuité** — la seule règle de validation du jeu. Elle ne s'intéresse
+   qu'aux raccords de morceaux : toutes les fonctions du langage étant
+   continues sur leur domaine, une expression à un seul morceau l'est par
+   théorème, et la balayer ne produirait que des faux positifs sur les fortes
+   pentes. Les raccords sont trouvés par les gardes simples (`x < c`, exactes)
+   et par un balayage numérique de la branche active (général). Renvoie **la
+   première** discontinuité, avec un message qui donne `x`, la limite à gauche
+   et la limite à droite.
 
 ## Interdits
 
