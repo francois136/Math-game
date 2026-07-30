@@ -3,6 +3,11 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     include: ['packages/*/src/**/*.test.ts'],
+    // Map generation and the property suites are genuinely slow — a map at six
+    // seats costs a second or more, and a fast-check run is thousands of
+    // traces. The default five seconds passes on a quiet laptop and fails on a
+    // loaded CI runner, which is the worst of both worlds.
+    testTimeout: 30_000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],

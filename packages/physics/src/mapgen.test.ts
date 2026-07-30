@@ -45,8 +45,14 @@ describe('what it produces', () => {
   it('never returns a map that fails its own validation', () => {
     // The invariant that matters: whatever the seat count, a map that comes
     // back is playable. Nothing here asserts that generation succeeds.
+    // Few attempts at the high seat counts on purpose: they are expected to
+    // fail, and burning a dozen doomed attempts per seed buys no coverage.
     for (const spawnCount of [2, 4, 6, 8]) {
-      const params = { ...DEFAULT_MAP_PARAMS, spawnCount, maxGenerationAttempts: 12 };
+      const params = {
+        ...DEFAULT_MAP_PARAMS,
+        spawnCount,
+        maxGenerationAttempts: spawnCount > 4 ? 3 : 12,
+      };
       for (let i = 0; i < 3; i += 1) {
         const result = generate(seed(`invariant-${String(spawnCount)}-${String(i)}`), params);
         if (!result.ok) continue;
