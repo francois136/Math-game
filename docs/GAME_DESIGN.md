@@ -166,8 +166,10 @@ personne ne peut gagner. Mesuré, documenté, corrigé — voir
 Après `maxGenerationAttempts` échecs, `ERR_MAP_GENERATION_FAILED` : le
 générateur refuse plutôt que de livrer une carte injouable.
 
-**Plafond actuel : quatre joueurs.** Au-delà, les deux contraintes ne sont pas
-satisfiables avec les paramètres par défaut. Point d'équilibrage ouvert.
+**Plafond : quatre joueurs**, inscrit dans les contrats
+([ADR 0012](adr/0012-four-players.md)). Au-delà, les deux contraintes ne sont
+pas satisfiables et agrandir le terrain n'y change rien. Le mode équipes se
+joue donc à 2 contre 2.
 
 C'est le garde-fou le plus important : il agit sur la cause plutôt que sur le
 symptôme. Le générateur ne se contente pas d'espérer : il place les joueurs,
