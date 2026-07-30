@@ -50,6 +50,18 @@ export default defineConfig(
     },
   },
   {
+    /**
+     * The composition root, and the only file allowed to read the wall clock.
+     *
+     * The ban on `Date.now` exists so that time is a parameter everywhere it
+     * could affect a match. Somewhere it has to enter the program, and that
+     * somewhere is here — bounded to one file, where it is greppable, rather
+     * than an inline disable that could quietly spread.
+     */
+    files: ['packages/server/src/main.ts'],
+    rules: { 'no-restricted-properties': 'off' },
+  },
+  {
     // Test files may assert on values the type checker already knows are safe.
     files: ['**/*.test.ts', '**/*.spec.ts'],
     rules: {

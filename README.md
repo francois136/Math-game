@@ -14,12 +14,14 @@ carte — arrête simplement le tir.
 
 ## État
 
-**Phase 3 : la partie se joue.** Le moteur est complet et une partie va du
-premier tour à la victoire — sur un seul clavier, sans serveur.
+**Phase 4 : le multijoueur en ligne.** Le serveur autoritatif tourne, avec
+salons, sessions, reconnexion et limitation de débit. Il n'y a pas encore de
+client graphique pour s'y connecter.
 
 ```bash
 pnpm install && pnpm run typecheck
-pnpm run hotseat                       # partie à deux, chacun son tour
+pnpm run serve                         # serveur WebSocket, port 8787
+pnpm run hotseat                       # partie à deux sur un clavier, sans réseau
 pnpm run demo --seed bravo --f "x^2/40"  # un seul tir, pour regarder le tracé
 ```
 
@@ -27,9 +29,8 @@ Ce qui marche : écrire une fonction, se la voir refuser en français sans perdr
 son tour si elle est discontinue ou mal formée, la voir tracée sur une carte
 générée, toucher, être éliminé, gagner.
 
-Ce qui manque : le serveur et le multijoueur en ligne (phase 4), l'interface
-graphique (phase 5), l'équilibrage et le bot (phase 6). Voir
-[`TASKS.md`](TASKS.md).
+Ce qui manque : l'interface graphique (phase 5), l'équilibrage et le bot
+(phase 6). Voir [`TASKS.md`](TASKS.md).
 
 ## Installation
 

@@ -23,6 +23,14 @@ Versions : [SemVer](https://semver.org/lang/fr/).
   des propriétés : le nombre de vivants ne croît jamais, le joueur actif est
   toujours vivant, `apply` ne modifie jamais l'état reçu, et une partie rejouée
   depuis sa graine et ses commandes est identique champ à champ.
+- `@fw/server` : serveur autoritatif complet — poignée de main et jetons de
+  session, salons à code d'invitation avec transfert d'hôte, spectateurs,
+  configuration, démarrage de partie, résolution des tirs, validation sans
+  coût de tour, échéances de tour, reconnexion avec instantané complet, et
+  limitation de débit par seau à jetons. 25 tests, dont une partie entière
+  jouée entre deux clients simulés et 8 000 trames aléatoires sans une seule
+  exception.
+- `IdFactoryPort.lobbyCode()` et `.sessionToken()`.
 - `ERR_NOT_ENOUGH_TEAMS` : une partie en équipes à une seule équipe est refusée
   au lieu de se terminer d'elle-même au premier tour.
 
@@ -55,8 +63,19 @@ Versions : [SemVer](https://semver.org/lang/fr/).
 - La CI passait en local et échouait sur un dépôt propre : le lint typé lisait
   les déclarations produites par la compilation, et tournait avant elle.
 
+### Retiré
+
+- `lobby:add-bot` quitte le protocole jusqu'à ce qu'un bot existe (phase 6).
+  Un message auquel le serveur ne sait répondre que « pas encore » invite un
+  client à écrire du code pour une fonctionnalité absente.
+
 ### Connu et non résolu
 
+- **Le rayon de hitbox peut défaire la règle de placement.** Une cible plus
+  large que la bande scellée se touche au premier tir plat ; c'est vrai au-delà
+  d'un rayon d'environ 3 sur la carte par défaut (1,5 par défaut, donc sans
+  danger tel quel). Élargir la bande en proportion a été essayé et écarté : la
+  génération à quatre joueurs tombe de 30/30 à 1/30. À trancher en BA-3.
 - **Une partie dure longtemps.** Un joueur qui tire au hasard met environ
   220 tirs à en éliminer un autre, soit 0,5 % de réussite par tir. Un humain
   qui corrige d'un tir sur l'autre fait mieux, de combien reste à mesurer
