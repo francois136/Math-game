@@ -123,7 +123,7 @@ export const DEFAULT_MAP_PARAMS: MapParams = Object.freeze({
   spawnMinDistance: 25,
   spawnClearance: 6,
   playerRadius: 1.5,
-  sightLineSamples: 24,
+  sightLineSamples: 9,
   maxGenerationAttempts: 200,
 });
 

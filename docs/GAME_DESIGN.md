@@ -154,10 +154,20 @@ Trois garde-fous, cumulables, tous réglables par salon.
 ### Placement garanti
 
 Le générateur rejette toute carte où deux joueurs sont reliés par une courbe
-simple sans obstacle sur le chemin. Pour chaque paire de points d'apparition, il
-échantillonne `sightLineSamples` courbes — la droite qui les joint, et une
-famille de paraboles de flèches croissantes. Si l'une d'elles passe, la carte
-est regénérée. Après `maxGenerationAttempts` échecs, `ERR_MAP_GENERATION_FAILED`.
+**triviale** — la droite qui les joint et les arcs à ±5 % de la hauteur de
+carte, c'est-à-dire ce qu'un joueur tape dans ses trente premières secondes.
+
+Et il rejette tout autant une carte où **aucune** courbe ne les relie. C'est
+l'autre moitié de la règle, et elle n'est pas décorative : boucher toutes les
+paraboles revient à boucher la joignabilité elle-même, et produit des cartes que
+personne ne peut gagner. Mesuré, documenté, corrigé — voir
+[ADR 0011](adr/0011-placement-rule-must-cut-both-ways.md).
+
+Après `maxGenerationAttempts` échecs, `ERR_MAP_GENERATION_FAILED` : le
+générateur refuse plutôt que de livrer une carte injouable.
+
+**Plafond actuel : quatre joueurs.** Au-delà, les deux contraintes ne sont pas
+satisfiables avec les paramètres par défaut. Point d'équilibrage ouvert.
 
 C'est le garde-fou le plus important : il agit sur la cause plutôt que sur le
 symptôme. Le générateur ne se contente pas d'espérer : il place les joueurs,
@@ -180,10 +190,20 @@ apprend donc qu'il a visé juste, et le protégé apprend qu'il est visé.
 
 ### Immunité de départ du tireur
 
-Un tir ne peut pas tuer son auteur sur ses `selfImmunityArc` premières unités de
-longueur d'arc (défaut : **3**). Au-delà, il le peut : une courbe qui revient
-sur son auteur le tue, et c'est une des façons de perdre les plus instructives
-du jeu.
+Un tir part **à l'intérieur de la hitbox de son auteur**. Sans garde-fou, tout
+tir tuerait son tireur sur place. Il est donc invulnérable à son propre tir sur
+les `selfImmunityArc` premières unités de longueur d'arc (défaut : **3**).
+
+Ce réglage doit rester supérieur au rayon de hitbox (1,5 par défaut), sinon
+l'immunité expire avant que la courbe n'ait quitté le tireur, et il meurt de son
+propre tir.
+
+Une précision qui a son importance, et qui n'était pas comprise au moment
+d'écrire le brief : **une courbe ne peut pas revenir sur son auteur.** Elle est
+le graphe d'une fonction de `x`, et le tracé s'éloigne de `x₀` de façon
+monotone ; il ne repasse donc jamais par l'abscisse du tireur. Se tuer soi-même
+en bouclant est impossible — l'immunité de départ protège du départ, et de
+rien d'autre.
 
 ### Budget de complexité (facultatif, désactivé par défaut)
 

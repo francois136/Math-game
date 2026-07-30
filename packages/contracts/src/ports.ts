@@ -96,8 +96,14 @@ export interface TracerPort {
 
 export interface MapValidation {
   readonly ok: boolean;
-  /** Pairs of spawn indices that a simple curve connects with nothing between. */
+  /** Pairs a trivial curve connects with nothing in the way — a free first kill. */
   readonly exposedPairs: readonly (readonly [number, number])[];
+  /**
+   * Pairs no curve of the wide family can connect at all — a match nobody can
+   * win. Sealing the trivial curves too hard produces these, so the generator
+   * checks for both (ADR 0011).
+   */
+  readonly unreachablePairs: readonly (readonly [number, number])[];
   readonly coverage: number;
 }
 
