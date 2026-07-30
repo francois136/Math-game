@@ -1,0 +1,24 @@
+{
+  "name": "@fw/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Authoritative WebSocket server: lobbies, sessions, reconnection, match orchestration.",
+  "main": "./dist/main.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --build",
+    "start": "node dist/main.js",
+    "clean": "rm -rf dist *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@fw/contracts": "workspace:*",
+    "@fw/core-math": "workspace:*",
+    "@fw/physics": "workspace:*",
+    "@fw/rules": "workspace:*",
+    "ws": "^8.19.0",
+    "zod": "^4.1.12"
+  }
+}
