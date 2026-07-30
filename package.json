@@ -1,0 +1,40 @@
+{
+  "name": "functionwars",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "FunctionWars — turn-based multiplayer game where players eliminate each other by plotting mathematical curves.",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=10"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "scripts": {
+    "typecheck": "tsc --build --force",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "tsc --build",
+    "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^22.19.1",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "fast-check": "^4.3.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.4",
+    "vitest": "^3.2.4"
+  }
+}
