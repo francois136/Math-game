@@ -1,7 +1,7 @@
 # FunctionWars
 
-Un jeu multijoueur au tour par tour, de deux à quatre joueurs, où l'on
-s'élimine en traçant des courbes.
+Un jeu au tour par tour, de deux à quatre joueurs, où l'on s'élimine en
+traçant des courbes.
 
 À son tour, un joueur écrit une fonction — `x^2`, `3*sin(x/2)`, `ln(x+4)`, ou
 une fonction par morceaux — et choisit un sens de propagation. La courbe part de
@@ -14,20 +14,22 @@ carte — arrête simplement le tir.
 
 ## État
 
-**Phase 2 : le moteur.** Le langage de fonctions, le tracé et les cartes
-existent et sont testés ; il n'y a encore ni tours, ni éliminations, ni réseau.
+**Phase 3 : la partie se joue.** Le moteur est complet et une partie va du
+premier tour à la victoire — sur un seul clavier, sans serveur.
 
 ```bash
-pnpm install && pnpm run build
-pnpm run demo --seed bravo --f "x^2/40"
+pnpm install && pnpm run typecheck
+pnpm run hotseat                       # partie à deux, chacun son tour
+pnpm run demo --seed bravo --f "x^2/40"  # un seul tir, pour regarder le tracé
 ```
 
-Ce qui marche : écrire une fonction, se la voir refuser en français si elle est
-discontinue ou mal formée, la voir tracée sur une carte générée, et savoir
-exactement où et pourquoi le tir s'est arrêté.
+Ce qui marche : écrire une fonction, se la voir refuser en français sans perdre
+son tour si elle est discontinue ou mal formée, la voir tracée sur une carte
+générée, toucher, être éliminé, gagner.
 
-Ce qui manque : les tours et la victoire (`@fw/rules`, phase 3), le serveur
-(phase 4), l'interface (phase 5). Voir [`TASKS.md`](TASKS.md).
+Ce qui manque : le serveur et le multijoueur en ligne (phase 4), l'interface
+graphique (phase 5), l'équilibrage et le bot (phase 6). Voir
+[`TASKS.md`](TASKS.md).
 
 ## Installation
 

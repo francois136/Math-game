@@ -16,8 +16,15 @@ Versions : [SemVer](https://semver.org/lang/fr/).
   segment/polygone convexe, tracé à pas adaptatif, générateur de cartes
   déterministe et sa validation. 50 tests.
 - `@fw/cli` : une démonstration en terminal — une carte, une fonction, un
-  tracé en ASCII. Ni tours ni éliminations : cette logique appartient à
-  `@fw/rules`.
+  tracé en ASCII — et `pnpm run hotseat`, une partie complète à deux à quatre
+  joueurs sur un seul clavier.
+- `@fw/rules` : création de partie, tours, boucliers, vulnérabilités, modes FFA
+  et équipes, conditions de victoire, déconnexion et reconnexion. 29 tests dont
+  des propriétés : le nombre de vivants ne croît jamais, le joueur actif est
+  toujours vivant, `apply` ne modifie jamais l'état reçu, et une partie rejouée
+  depuis sa graine et ses commandes est identique champ à champ.
+- `ERR_NOT_ENOUGH_TEAMS` : une partie en équipes à une seule équipe est refusée
+  au lieu de se terminer d'elle-même au premier tour.
 
 ### Décidé, en cours d'implémentation
 
@@ -37,7 +44,23 @@ Versions : [SemVer](https://semver.org/lang/fr/).
   placement coupe dans les deux sens : rien de trivial ne relie deux joueurs,
   mais quelque chose les relie toujours. **Plafond mesuré : quatre joueurs.**
 
+### Corrigé
+
+- La graine d'une partie ne pilotait rien : les tirages de placement venaient
+  d'un générateur injecté à part, sans garantie qu'il corresponde à la graine
+  inscrite dans l'état. Une partie pouvait annoncer une graine et avoir été
+  tirée avec une autre, et son rejeu n'aurait rien reproduit. Le moteur dérive
+  maintenant tout de `setup.seed`, et `RulesDeps.rng` a disparu. Voir la
+  correction datée dans [ADR 0004](docs/adr/0004-determinism.md).
+- La CI passait en local et échouait sur un dépôt propre : le lint typé lisait
+  les déclarations produites par la compilation, et tournait avant elle.
+
 ### Connu et non résolu
+
+- **Une partie dure longtemps.** Un joueur qui tire au hasard met environ
+  220 tirs à en éliminer un autre, soit 0,5 % de réussite par tir. Un humain
+  qui corrige d'un tir sur l'autre fait mieux, de combien reste à mesurer
+  (tâche BA-3).
 
 - Le générateur ne produit pas de carte à six joueurs ou plus. Il refuse
   proprement plutôt que d'en livrer une injouable ; `DEFAULT_RULES.maxPlayers`

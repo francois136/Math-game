@@ -21,5 +21,9 @@
   },
   "dependencies": {
     "@fw/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "@fw/core-math": "workspace:*",
+    "@fw/physics": "workspace:*"
   }
 }

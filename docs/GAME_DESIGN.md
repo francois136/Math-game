@@ -190,6 +190,12 @@ avec un indicateur visuel. Un tir qui touche un joueur protégé le traverse : l
 tir n'est pas arrêté, et le `Hit` est marqué `absorbedBy: 'shield'` — le tireur
 apprend donc qu'il a visé juste, et le protégé apprend qu'il est visé.
 
+Le compte se fait en **tours du joueur lui-même**, pas en manches : le bouclier
+décroît à la fin de son propre tour, qu'il ait tiré, passé ou été absent. « Tu
+es tranquille pendant tes deux premiers tours » est ce qu'un joueur comprend en
+lisant l'indicateur, et c'est robuste à une élimination ailleurs dans l'ordre,
+ce qu'un compteur de manches ne serait pas.
+
 ### Immunité de départ du tireur
 
 Un tir part **à l'intérieur de la hitbox de son auteur**. Sans garde-fou, tout
@@ -219,6 +225,14 @@ rien d'autre.
 | `ffa`   | Dernier joueur vivant                    | sans objet                     |
 | `teams` | Dernière équipe ayant au moins un vivant | réglable, désactivé par défaut |
 
+Une partie en équipes exige **au moins deux équipes** : s'il n'y en a qu'une,
+elle a gagné dès la première résolution, avant que personne n'ait joué. Le
+moteur refuse la partie plutôt que de la laisser se terminer toute seule
+(`ERR_NOT_ENOUGH_TEAMS`).
+
+Un joueur sans équipe en mode équipes compte comme son propre camp : il ne peut
+donc pas gagner « avec » quelqu'un d'autre par accident.
+
 Si la dernière résolution élimine tous les survivants restants, la partie est
 nulle.
 
@@ -238,6 +252,13 @@ les modes existants.
 
 ## 7. Ce qui reste ouvert
 
+- **La durée d'une partie.** Mesuré : un joueur qui tire au hasard dans une
+  famille raisonnable de fonctions met environ 220 tirs à en éliminer un autre,
+  soit un taux de réussite de l'ordre de 0,5 % par tir. Un joueur humain, qui
+  voit où son tir s'est arrêté et corrige, fait beaucoup mieux — de combien
+  reste à mesurer, et c'est l'objet de la campagne d'équilibrage BA-3. Les
+  leviers connus : rayon de hitbox, distance entre les points d'apparition,
+  densité d'obstacles.
 - Le bot : stratégie et niveaux (phase 6).
 - Le format des rejeux partageables (phase 6).
 - L'ordre de résolution en mode simultané (voir plus haut).
