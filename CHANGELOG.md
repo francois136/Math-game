@@ -24,6 +24,7 @@ posé, c'est ce contre quoi six agents vont pouvoir coder en parallèle.
 - CI GitHub Actions : format, lint, typecheck, tests, plus une passe dédiée qui
   interdit `eval`, `new Function` et `Math.random`.
 - Modèles de pull request et d'issues, `CODEOWNERS`, backlog dans `TASKS.md`.
+- Hook pre-commit sans dépendance (`.githooks/pre-commit`), à activer par clone.
 
 ### Décidé
 

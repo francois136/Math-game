@@ -18,6 +18,19 @@ pnpm run check         # doit être vert avant toute chose
 4. `pnpm run check` doit passer en local. La CI exécute exactement cette
    commande.
 
+## Hook pre-commit
+
+Facultatif, sans dépendance, à activer une fois par clone — et une fois par
+`git worktree` :
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Il ne vérifie que les fichiers indexés : formatage, absence d'`eval`, de
+`new Function` et de `Math.random`, et `TODO` sans numéro d'issue. Il reste sous
+la seconde. La vraie barrière, c'est `pnpm run check`.
+
 ## Commits
 
 [Conventional Commits](https://www.conventionalcommits.org/), en anglais, avec

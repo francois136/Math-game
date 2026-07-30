@@ -1,0 +1,45 @@
+#!/bin/sh
+# Pre-commit hook — zero dependency, opt-in.
+#
+# Enable it once per clone (and once per git worktree):
+#     git config core.hooksPath .githooks
+#
+# It checks only what is staged, so it stays under a second. The full gate is
+# `pnpm run check`, which is what CI runs.
+
+set -e
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "$staged" ] && exit 0
+
+# 1. Formatting, on staged files Prettier understands.
+formattable=$(printf '%s\n' "$staged" | grep -Ei '\.(ts|tsx|js|json|md|ya?ml)$' || true)
+if [ -n "$formattable" ]; then
+  printf '%s\n' "$formattable" | xargs pnpm exec prettier --check || {
+    echo
+    echo "Formatting issues. Run: pnpm run format"
+    exit 1
+  }
+fi
+
+# 2. The guard rails of ADR 0002 and 0004. The lint rules say the same thing,
+#    but a rule can be disabled inline and this grep cannot.
+sources=$(printf '%s\n' "$staged" | grep -E '^packages/.*\.tsx?$' || true)
+if [ -n "$sources" ]; then
+  if printf '%s\n' "$sources" | xargs grep -EnH '\beval[[:space:]]*\(|new Function[[:space:]]*\(|\bMath\.random[[:space:]]*\('; then
+    echo
+    echo "Forbidden construct. See docs/adr/0002 and docs/adr/0004."
+    exit 1
+  fi
+fi
+
+# 3. TODOs must carry an issue number.
+if [ -n "$sources" ]; then
+  if printf '%s\n' "$sources" | xargs grep -EnH 'TODO(?!\(#[0-9]+\))' -P; then
+    echo
+    echo "A TODO needs an issue: // TODO(#123): ..."
+    exit 1
+  fi
+fi
+
+exit 0

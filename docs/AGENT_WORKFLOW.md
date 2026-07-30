@@ -23,6 +23,7 @@ autre.
 git worktree add ../fw-core-math -b feat/core-math/parser origin/main
 cd ../fw-core-math
 pnpm install
+git config core.hooksPath .githooks   # le hook pre-commit, par worktree
 ```
 
 Pour finir :
