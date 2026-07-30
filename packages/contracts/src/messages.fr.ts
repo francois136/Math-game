@@ -71,6 +71,10 @@ const FR: Formatters = {
   ERR_PLAYER_ELIMINATED: () => 'Tu es éliminé : tu peux regarder, plus tirer.',
   ERR_NOT_ENOUGH_PLAYERS: (p) =>
     `Il faut au moins ${String(p.min)} joueurs pour lancer la partie, vous êtes ${String(p.count)}.`,
+  ERR_NOT_ENOUGH_TEAMS: (p) =>
+    p.count <= 1
+      ? 'Une partie en équipes a besoin d’au moins deux équipes : répartissez les joueurs avant de lancer.'
+      : `Il faut au moins deux équipes, vous en avez ${String(p.count)}.`,
   ERR_MAP_GENERATION_FAILED: (p) =>
     `Impossible de générer une carte équilibrée en ${String(p.attempts)} tentatives. Change de graine ou baisse les contraintes de placement.`,
 

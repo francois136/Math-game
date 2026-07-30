@@ -28,6 +28,14 @@ même partie.
 
 ## Conséquences
 
+_Correction du 30 juillet 2026._ `RulesDeps` portait un `rng` injecté, distinct
+de la graine inscrite dans l'état de la partie. Rien ne garantissait que les
+deux coïncident : une partie pouvait annoncer la graine A et avoir été tirée
+avec la graine B, et son rejeu n'aurait rien reproduit. Le moteur de règles
+dérive maintenant ses flux de `setup.seed` par `createRng`, et le champ a été
+retiré. Une graine qui ne pilote pas tout n'est pas une graine, c'est une
+étiquette.
+
 - Un rejeu est un `reduce` sur la liste des `TurnRecord`, sans machinerie
   supplémentaire.
 - Les tests comparent des états entiers, champ à champ, et non des extraits.

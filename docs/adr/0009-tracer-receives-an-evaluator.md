@@ -29,3 +29,6 @@ qui détient déjà les deux ports dans ses `deps`, le passe au tracer.
 - Un coût réel : une indirection d'appel par évaluation, dans la boucle la plus
   chaude du jeu. Le banc de PH-8 dira si elle se voit ; en cas de besoin, la
   réponse sera de mémoriser l'appel côté tracer, pas de recâbler le graphe.
+- _Constaté en phase 3 :_ `RulesDeps` doit porter l'évaluateur lui aussi,
+  puisque c'est le moteur de règles qui construit le `TraceInput`. Champ ajouté
+  ; la décision ne change pas, sa surface s'étend d'un cran.
