@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { AabbSchema } from './geometry.js';
-import { MAX_AST_NODES, MAX_EVALUATIONS_PER_SHOT, MAX_TRACE_POINTS } from './limits.js';
+import {
+  MAX_AST_NODES,
+  MAX_EVALUATIONS_PER_SHOT,
+  MAX_PLAYERS,
+  MAX_TRACE_POINTS,
+} from './limits.js';
 
 /** Free-for-all, or teams. New modes are added here and in @fw/rules together. */
 export const GameModeSchema = z.enum(['ffa', 'teams']);
@@ -26,8 +31,8 @@ export const RuleSetSchema = z.object({
   simultaneousResolution: z.boolean(),
   /** Max AST nodes allowed per shot, or null for no per-turn budget. */
   complexityBudget: z.number().int().min(1).max(MAX_AST_NODES).nullable(),
-  minPlayers: z.number().int().min(2).max(8),
-  maxPlayers: z.number().int().min(2).max(8),
+  minPlayers: z.number().int().min(2).max(MAX_PLAYERS),
+  maxPlayers: z.number().int().min(2).max(MAX_PLAYERS),
 });
 export type RuleSet = z.infer<typeof RuleSetSchema>;
 
@@ -41,7 +46,7 @@ export const DEFAULT_RULES: RuleSet = Object.freeze({
   simultaneousResolution: false,
   complexityBudget: null,
   minPlayers: 2,
-  maxPlayers: 8,
+  maxPlayers: MAX_PLAYERS,
 });
 
 /**
@@ -98,7 +103,7 @@ export const MapParamsSchema = z.object({
    * of players: a two-player map that had to satisfy the sight-line check for
    * eight seats would be needlessly hard to generate, and often uglier.
    */
-  spawnCount: z.number().int().min(2).max(8),
+  spawnCount: z.number().int().min(2).max(MAX_PLAYERS),
   /** Minimum distance between two spawn points. */
   spawnMinDistance: z.number().positive(),
   /** Distance kept clear around each spawn point. */

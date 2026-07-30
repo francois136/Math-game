@@ -4,6 +4,7 @@ import { GameMapSchema, Vec2Schema } from './geometry.js';
 import { MatchConfigSchema } from './config.js';
 import { ShotRequestSchema, TraceResultSchema } from './shot.js';
 import { FwErrorSchema } from './errors.js';
+import { MAX_PLAYERS } from './limits.js';
 
 export const PlayerSchema = z.object({
   id: PlayerIdSchema,
@@ -66,9 +67,9 @@ export const MatchStateSchema = z.object({
   phase: MatchPhaseSchema,
   config: MatchConfigSchema,
   map: GameMapSchema,
-  players: z.array(PlayerSchema).min(2).max(8),
+  players: z.array(PlayerSchema).min(2).max(MAX_PLAYERS),
   /** Turn order, decided once at match start from the seed. */
-  order: z.array(PlayerIdSchema).min(2).max(8),
+  order: z.array(PlayerIdSchema).min(2).max(MAX_PLAYERS),
   turn: ActiveTurnSchema.nullable(),
   history: z.array(TurnRecordSchema),
   outcome: MatchOutcomeSchema.nullable(),

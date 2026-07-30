@@ -1,6 +1,7 @@
 # FunctionWars
 
-Un jeu multijoueur au tour par tour où l'on s'élimine en traçant des courbes.
+Un jeu multijoueur au tour par tour, de deux à quatre joueurs, où l'on
+s'élimine en traçant des courbes.
 
 À son tour, un joueur écrit une fonction — `x^2`, `3*sin(x/2)`, `ln(x+4)`, ou
 une fonction par morceaux — et choisit un sens de propagation. La courbe part de

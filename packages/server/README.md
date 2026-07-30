@@ -14,7 +14,7 @@ diffuse le résultat. Une trame client est une demande, jamais un fait.
 2. **Sessions** : `hello` crée un `PlayerId` et un `SessionToken`. Le token
    seul permet de reprendre un siège après une coupure. Il n'est jamais dérivé
    du `PlayerId` et n'est jamais diffusé aux autres.
-3. **Salons** : code d'invitation à 6 caractères, 2 à 8 joueurs, spectateurs
+3. **Salons** : code d'invitation à 6 caractères, 2 à 4 joueurs (ADR 0012), spectateurs
    illimités jusqu'à 32 connexions, hôte transféré au plus ancien membre si
    l'hôte part.
 4. **Orchestration** : le serveur possède la boucle d'horloge (échéances de

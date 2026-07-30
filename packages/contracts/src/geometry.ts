@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ObstacleIdSchema } from './ids.js';
+import { MAX_PLAYERS } from './limits.js';
 
 /** Game-world coordinates, in abstract units. The client maps them to pixels. */
 export const Vec2Schema = z.object({
@@ -65,7 +66,7 @@ export const GameMapSchema = z.object({
   name: z.string().min(1).max(64),
   bounds: AabbSchema,
   obstacles: z.array(ObstacleSchema).max(128),
-  spawns: z.array(SpawnPointSchema).min(2).max(8),
+  spawns: z.array(SpawnPointSchema).min(2).max(MAX_PLAYERS),
   seed: z.string().max(64).nullable(),
   /** Bumped whenever the generator changes shape; old replays keep their maps. */
   generatorVersion: z.number().int().nonnegative(),

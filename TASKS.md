@@ -114,12 +114,9 @@ cours. Commencer sur une base non fusionnée est la première cause de conflit.
 - L'ordre de résolution en mode simultané n'est pas tranché (BA-6). Le champ
   `RuleSet.simultaneousResolution` existe mais aucune implémentation ne le lit.
 - Le format de rejeu partageable n'est pas figé (BA-4).
-- **Le générateur plafonne à quatre joueurs** (BA-8). À cinq c'est
-  intermittent, à six et plus les deux contraintes de l'ADR 0011 ne sont pas
-  satisfiables et `generate` refuse. `DEFAULT_RULES.maxPlayers` vaut toujours 8 :
-  un salon de six peut donc être configuré et échouer au démarrage. Décision à
-  prendre — plafonner les salons, ou renoncer à la règle de placement au-delà
-  de quatre et s'en remettre au bouclier.
+- **Le jeu plafonne à quatre joueurs**, décidé par le superviseur et inscrit
+  dans les contrats ([ADR 0012](docs/adr/0012-four-players.md)). Lever le
+  plafond suppose de rouvrir l'ADR 0011 — tâche BA-8.
 - Le générateur ne produit que des rectangles et des disques. Les polygones
   convexes sont dans les contrats, gérés par les collisions et validés, mais
   seules les cartes JSON écrites à la main peuvent en contenir.
