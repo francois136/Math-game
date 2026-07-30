@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: format · lint · typecheck · tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Format
+        run: pnpm run format:check
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Tests
+        run: pnpm run test
+
+  no-eval:
+    name: no eval, no Math.random
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      # Belt and braces: the lint rules already forbid these, but a rule can be
+      # disabled inline. This job cannot. See docs/adr/0002 and 0004.
+      - name: Grep for forbidden constructs
+        run: |
+          if grep -rEn '\beval\s*\(|new Function\s*\(|\bMath\.random\s*\(' \
+               --include='*.ts' --include='*.tsx' packages/; then
+            echo "::error::Forbidden construct found. See docs/adr/0002 and docs/adr/0004."
+            exit 1
+          fi
+          echo "Clean."

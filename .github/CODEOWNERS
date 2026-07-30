@@ -1,0 +1,18 @@
+# Un périmètre, un propriétaire. Voir AGENTS.md §3.
+#
+# Les noms d'équipes GitHub sont à créer côté organisation ; en attendant,
+# @francois136 relit tout. Une revue du propriétaire est requise pour fusionner.
+
+*                           @francois136
+
+# Les contrats sont gelés : toute modification passe par le lead et une ADR.
+/packages/contracts/        @francois136
+/docs/adr/                  @francois136
+
+/packages/core-math/        @francois136
+/packages/physics/          @francois136
+/packages/rules/            @francois136
+/packages/server/           @francois136
+/packages/client/           @francois136
+
+/.github/                   @francois136

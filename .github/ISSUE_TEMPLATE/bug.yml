@@ -1,0 +1,35 @@
+name: Bogue
+description: Quelque chose ne fait pas ce qui est écrit
+labels: ['bug']
+body:
+  - type: input
+    id: package
+    attributes:
+      label: Paquet
+      placeholder: '@fw/physics'
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: |
+        Le déterminisme est un outil : donne la graine, la configuration et la
+        suite exacte de commandes. Sans elles, le bogue est une opinion.
+      placeholder: |
+        seed: "a4f2"
+        config: DEFAULT_MATCH_CONFIG
+        tirs: joueur 1 « x^2 » croissant, joueur 2 « ln(x+5) » décroissant
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Attendu / obtenu
+    validations:
+      required: true
+  - type: input
+    id: doc
+    attributes:
+      label: Ce que dit la documentation
+      description: Le passage de GAME_DESIGN.md ou du README de paquet qui est contredit

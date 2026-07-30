@@ -1,0 +1,39 @@
+name: Tâche
+description: Une unité de travail pour un agent, telle qu'elle apparaît dans TASKS.md
+labels: ['task']
+body:
+  - type: input
+    id: task-id
+    attributes:
+      label: Identifiant
+      description: L'identifiant de TASKS.md, par exemple CM-3
+      placeholder: CM-3
+    validations:
+      required: true
+  - type: dropdown
+    id: agent
+    attributes:
+      label: Agent propriétaire
+      options: [Core-Math, Physics, Rules, Server, Client, QA/DevOps, Lead]
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Objectif
+      description: Ce qui doit exister à la fin, du point de vue de l'appelant
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Critères d'acceptation
+      description: Ce qu'on doit pouvoir vérifier. Un critère non vérifiable n'en est pas un
+    validations:
+      required: true
+  - type: input
+    id: deps
+    attributes:
+      label: Dépend de
+      description: Tâches qui doivent être fusionnées dans main avant de commencer
+      placeholder: CM-2, CT-2

@@ -1,0 +1,45 @@
+name: Changement de contrat
+description: Une modification de @fw/contracts est nécessaire
+labels: ['contract']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Les contrats sont gelés (ADR 0003). Cette issue est la **seule** façon
+        d'en demander la modification. En attendant qu'elle soit traitée :
+        écris un adaptateur local dans ton paquet et continue.
+  - type: input
+    id: symbol
+    attributes:
+      label: Symbole concerné
+      placeholder: 'TraceInput.targets'
+    validations:
+      required: true
+  - type: textarea
+    id: need
+    attributes:
+      label: Ce qui manque, et pourquoi le contour local ne suffit pas
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Forme proposée
+      description: Le TypeScript exact que tu proposes
+    validations:
+      required: true
+  - type: dropdown
+    id: breaking
+    attributes:
+      label: Cassant ?
+      description: |
+        Cassant = invalide les rejeux enregistrés, ou change PROTOCOL_VERSION,
+        limits.ts, rng.ts ou TraceParams.
+      options: ['Non', 'Oui']
+    validations:
+      required: true
+  - type: input
+    id: affected
+    attributes:
+      label: Paquets impactés
+      placeholder: '@fw/physics, @fw/rules'
