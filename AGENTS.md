@@ -91,7 +91,9 @@ ligne dans `references` de `tsconfig.json` racine. Rien d'autre.
 
 ## 7. Définition de « terminé »
 
-- [ ] `pnpm run check` vert en local
+- [ ] `pnpm run check` vert en local, sur un arbre propre (`rm -rf packages/*/dist`
+      d'abord : le lint typé et les tests lisent les `.d.ts` produits par la
+      compilation, et un `dist/` périmé masque de vraies erreurs)
 - [ ] Tests unitaires **et** de propriétés sur ce qui a été ajouté
 - [ ] Aucune régression sur la suite complète
 - [ ] Aucun `TODO` sans issue, aucun code mort

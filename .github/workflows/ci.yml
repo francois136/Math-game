@@ -30,11 +30,15 @@ jobs:
       - name: Format
         run: pnpm run format:check
 
+      # Typecheck first, and not by taste: `tsc --build` is what emits each
+      # package's .d.ts, and both the type-aware lint and the tests resolve
+      # @fw/* through those files. Linting first passes on a machine where a
+      # previous build is still lying around, and fails on a clean checkout.
+      - name: Typecheck and build
+        run: pnpm run typecheck
+
       - name: Lint
         run: pnpm run lint
-
-      - name: Typecheck
-        run: pnpm run typecheck
 
       - name: Tests
         run: pnpm run test

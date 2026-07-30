@@ -24,7 +24,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "build": "tsc --build",
-    "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test",
+    "check": "pnpm run format:check && pnpm run typecheck && pnpm run lint && pnpm run test",
     "demo": "pnpm --filter @fw/cli exec node dist/demo.js"
   },
   "devDependencies": {
