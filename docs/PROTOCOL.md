@@ -101,8 +101,8 @@ socket : c'est presque toujours une course, pas une attaque.
 1. Le client conserve son `SessionToken` (mémoire de l'onglet, pas de stockage
    persistant : rien ne sort de la machine).
 2. À la reconnexion, `hello` avec le token.
-3. Si le siège est encore tenu (`reconnectGraceMs` non écoulé), le serveur
-   renvoie le même `PlayerId`, puis un `match:state` complet.
+3. Si le siège est encore tenu (**deux minutes**, `RECONNECT_GRACE_MS`), le
+   serveur renvoie le même `PlayerId`, puis un `match:state` complet.
 4. Sinon, `ERR_UNAUTHORIZED`, et le client repart comme nouveau joueur.
 
 Pendant la coupure, les tours du joueur sont passés (`skipped: 'disconnected'`).
@@ -127,3 +127,8 @@ qu'un client web se recharge.
 Ajouter un type de message est compatible ; en retirer un, en changer la forme,
 ou changer le sens d'un champ ne l'est pas et impose un bump de version, avec
 une ADR.
+
+`lobby:add-bot` a été retiré avant la première mise en service : il n'y a pas de
+bot avant la phase 6, et un message auquel le serveur ne sait répondre que
+« pas encore » invite un client à écrire du code pour rien. Il reviendra avec le
+bot. La version reste 1, puisque aucun client n'a jamais parlé ce protocole.

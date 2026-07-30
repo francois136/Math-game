@@ -166,6 +166,16 @@ personne ne peut gagner. Mesuré, documenté, corrigé — voir
 Après `maxGenerationAttempts` échecs, `ERR_MAP_GENERATION_FAILED` : le
 générateur refuse plutôt que de livrer une carte injouable.
 
+**Le rayon de hitbox et la bande scellée sont couplés.** La bande triviale
+mesure ±5 % de la hauteur de carte, soit ±3 unités par défaut, pour un rayon de
+1,5 : la cible tient dans la bande, et le scellement mord. Un hôte qui monte
+`playerRadius` à 5 sur une petite carte obtient une cible plus large que la
+bande, et le premier tir plat gagne — mesuré. Élargir la bande en proportion a
+été essayé : la génération à quatre joueurs s'effondre de 30/30 à 1/30 et coûte
+douze secondes. Le couplage est donc laissé tel quel, documenté, et confié à la
+campagne d'équilibrage BA-3 ; en attendant, ne montez pas le rayon sans baisser
+la distance entre joueurs.
+
 **Plafond : quatre joueurs**, inscrit dans les contrats
 ([ADR 0012](adr/0012-four-players.md)). Au-delà, les deux contraintes ne sont
 pas satisfiables et agrandir le terrain n'y change rien. Le mode équipes se

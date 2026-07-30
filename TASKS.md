@@ -117,6 +117,10 @@ cours. Commencer sur une base non fusionnée est la première cause de conflit.
 - **Le jeu plafonne à quatre joueurs**, décidé par le superviseur et inscrit
   dans les contrats ([ADR 0012](docs/adr/0012-four-players.md)). Lever le
   plafond suppose de rouvrir l'ADR 0011 — tâche BA-8.
+- `playerRadius` peut défaire la règle de placement : une cible plus large que
+  la bande scellée se touche au premier tir plat. Vrai au-delà d'environ 3 sur
+  la carte par défaut. Élargir la bande en proportion casse la génération à
+  quatre joueurs — mesuré, et écarté. À trancher en BA-3.
 - Le générateur ne produit que des rectangles et des disques. Les polygones
   convexes sont dans les contrats, gérés par les collisions et validés, mais
   seules les cartes JSON écrites à la main peuvent en contenir.
