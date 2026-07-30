@@ -19,7 +19,9 @@
 Un champ ajouté « juste pour se dépanner » casse silencieusement cinq voisins.
 
 - On ne modifie `packages/contracts/` que dans une **PR dédiée**, qui ne touche
-  rien d'autre, accompagnée d'une **ADR** dans `docs/adr/`.
+  rien d'autre, accompagnée d'une **ADR** dans `docs/adr/` — sauf pour une
+  addition de routine comme un code d'erreur, qui va au `CHANGELOG.md`
+  (voir l'amendement dans [`docs/adr/README.md`](docs/adr/README.md)).
 - Bloqué par un contrat manquant ? Ouvre l'issue « contract change », code
   autour avec un adaptateur local, et continue. Ne le modifie pas dans la PR
   en cours.

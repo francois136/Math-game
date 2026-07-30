@@ -11,6 +11,9 @@
       "path": "./packages/physics"
     },
     {
+      "path": "./packages/rules"
+    },
+    {
       "path": "./packages/cli"
     }
   ]

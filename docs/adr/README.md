@@ -16,10 +16,18 @@ pourquoi.
 
 ## Quand écrire une ADR
 
-- Toute modification de `@fw/contracts`.
+- Toute modification **structurante** de `@fw/contracts` : une interface, une
+  limite, un défaut d'équilibrage, la forme du protocole.
 - Toute nouvelle dépendance de production.
 - Tout changement qui invalide les rejeux enregistrés.
 - Tout choix qu'un agent arrivant dans six mois trouverait arbitraire.
+
+**Amendement du 30 juillet 2026.** La règle disait « toute modification de
+`@fw/contracts` », sans exception. Ajouter un code d'erreur avec son message
+français est une addition de routine, sans décision derrière : lui imposer une
+ADR aurait noyé le journal sous des notes vides, et c'est ainsi qu'on cesse de
+lire un journal. Ces additions passent par le `CHANGELOG.md`. La PR reste
+dédiée : ce point-là ne change pas.
 
 ## Forme
 

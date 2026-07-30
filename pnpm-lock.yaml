@@ -47,6 +47,9 @@ importers:
       '@fw/physics':
         specifier: workspace:*
         version: link:../physics
+      '@fw/rules':
+        specifier: workspace:*
+        version: link:../rules
 
   packages/client:
     dependencies:
@@ -86,6 +89,13 @@ importers:
       '@fw/contracts':
         specifier: workspace:*
         version: link:../contracts
+    devDependencies:
+      '@fw/core-math':
+        specifier: workspace:*
+        version: link:../core-math
+      '@fw/physics':
+        specifier: workspace:*
+        version: link:../physics
 
   packages/server:
     dependencies:

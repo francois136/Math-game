@@ -32,6 +32,7 @@ export interface FwErrorParams {
   ERR_MATCH_NOT_RUNNING: { phase: string };
   ERR_PLAYER_ELIMINATED: Record<string, never>;
   ERR_NOT_ENOUGH_PLAYERS: { count: number; min: number };
+  ERR_NOT_ENOUGH_TEAMS: { count: number };
   ERR_MAP_GENERATION_FAILED: { attempts: number };
 
   // — Lobby and transport ————————————————————————————————————
@@ -83,6 +84,7 @@ export function errorCategory(code: FwErrorCode): 'parse' | 'validation' | 'rule
     case 'ERR_MATCH_NOT_RUNNING':
     case 'ERR_PLAYER_ELIMINATED':
     case 'ERR_NOT_ENOUGH_PLAYERS':
+    case 'ERR_NOT_ENOUGH_TEAMS':
     case 'ERR_MAP_GENERATION_FAILED':
       return 'rules';
     default:

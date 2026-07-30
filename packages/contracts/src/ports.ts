@@ -6,7 +6,6 @@ import type { MapParams, MatchConfig, TraceParams } from './config.js';
 import type { Direction, TraceResult } from './shot.js';
 import type { MatchCommand, MatchEvent, MatchState } from './match.js';
 import type { MatchId, PlayerId, Seed, TeamId } from './ids.js';
-import type { Rng } from './rng.js';
 
 /**
  * The seams between packages.
@@ -137,10 +136,11 @@ export interface MatchSetup {
 /** Everything the rules engine needs from the outside. No globals, no clock. */
 export interface RulesDeps {
   readonly parser: ExpressionParserPort;
+  /** Handed straight to the tracer in `TraceInput` (ADR 0009). */
+  readonly evaluator: EvaluatorPort;
   readonly continuity: ContinuityCheckerPort;
   readonly tracer: TracerPort;
   readonly maps: MapGeneratorPort;
-  readonly rng: Rng;
 }
 
 export interface RulesEnginePort {

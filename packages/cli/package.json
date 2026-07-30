@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Command-line demonstration of the engine: a map, a function, a trace.",
   "bin": {
-    "fw-demo": "./dist/demo.js"
+    "fw-demo": "./dist/demo.js",
+    "fw-hotseat": "./dist/hotseat.js"
   },
   "scripts": {
     "build": "tsc --build",
@@ -14,6 +15,7 @@
   "dependencies": {
     "@fw/contracts": "workspace:*",
     "@fw/core-math": "workspace:*",
-    "@fw/physics": "workspace:*"
+    "@fw/physics": "workspace:*",
+    "@fw/rules": "workspace:*"
   }
 }
