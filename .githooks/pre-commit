@@ -35,7 +35,7 @@ fi
 
 # 3. TODOs must carry an issue number.
 if [ -n "$sources" ]; then
-  if printf '%s\n' "$sources" | xargs grep -EnH 'TODO(?!\(#[0-9]+\))' -P; then
+  if printf '%s\n' "$sources" | xargs grep -PnH 'TODO(?!\(#[0-9]+\))'; then
     echo
     echo "A TODO needs an issue: // TODO(#123): ..."
     exit 1

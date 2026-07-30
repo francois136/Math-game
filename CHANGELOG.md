@@ -5,6 +5,23 @@ Versions : [SemVer](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté
+
+- `@fw/core-math` : lexeur, parseur à descente récursive, évaluateur et
+  vérificateur de continuité. 65 tests, dont des propriétés fast-check qui
+  couvrent « le parseur ne lève jamais », l'aller-retour impression/analyse, et
+  l'acceptation ou le refus de raccords construits.
+
+### Décidé, en cours d'implémentation
+
+- La vérification de continuité n'inspecte que les raccords de morceaux : les
+  fonctions du langage étant continues sur leur domaine, une expression à un
+  seul morceau l'est par théorème. Documenté dans `docs/GAME_DESIGN.md` §3 et
+  dans l'en-tête de `continuity.ts`.
+- La multiplication implicite suit un littéral — nombre, `pi` ou `e` — et pas
+  seulement un nombre, pour que `2e5` et `2pi x` se lisent comme un joueur les
+  écrit. Pas de notation scientifique.
+
 ## [0.1.0] — 2026-07-30
 
 Phase 1 : le squelette et les contrats. Le jeu n'est pas jouable ; ce qui est
