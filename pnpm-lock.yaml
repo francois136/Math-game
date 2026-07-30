@@ -36,6 +36,18 @@ importers:
         specifier: ^3.2.4
         version: 3.2.7(@types/node@22.20.1)
 
+  packages/cli:
+    dependencies:
+      '@fw/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@fw/core-math':
+        specifier: workspace:*
+        version: link:../core-math
+      '@fw/physics':
+        specifier: workspace:*
+        version: link:../physics
+
   packages/client:
     dependencies:
       '@fw/contracts':

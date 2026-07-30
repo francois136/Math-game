@@ -6,6 +6,12 @@
     },
     {
       "path": "./packages/core-math"
+    },
+    {
+      "path": "./packages/physics"
+    },
+    {
+      "path": "./packages/cli"
     }
   ]
 }

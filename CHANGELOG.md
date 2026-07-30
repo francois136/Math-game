@@ -12,6 +12,13 @@ Versions : [SemVer](https://semver.org/lang/fr/).
   couvrent « le parseur ne lève jamais », l'aller-retour impression/analyse, et
   l'acceptation ou le refus de raccords construits.
 
+- `@fw/physics` : intersections segment/rectangle, segment/disque et
+  segment/polygone convexe, tracé à pas adaptatif, générateur de cartes
+  déterministe et sa validation. 50 tests.
+- `@fw/cli` : une démonstration en terminal — une carte, une fonction, un
+  tracé en ASCII. Ni tours ni éliminations : cette logique appartient à
+  `@fw/rules`.
+
 ### Décidé, en cours d'implémentation
 
 - La vérification de continuité n'inspecte que les raccords de morceaux : les
@@ -21,6 +28,20 @@ Versions : [SemVer](https://semver.org/lang/fr/).
 - La multiplication implicite suit un littéral — nombre, `pi` ou `e` — et pas
   seulement un nombre, pour que `2e5` et `2pi x` se lisent comme un joueur les
   écrit. Pas de notation scientifique.
+- [ADR 0008](docs/adr/0008-map-generator-knows-the-seat-count.md) — le
+  générateur reçoit le nombre de sièges.
+- [ADR 0009](docs/adr/0009-tracer-receives-an-evaluator.md) — le tracer reçoit
+  un évaluateur au lieu de l'importer.
+- [ADR 0010](docs/adr/0010-coverage-ceiling.md) — plafond de couverture à 0,35.
+- [ADR 0011](docs/adr/0011-placement-rule-must-cut-both-ways.md) — la règle de
+  placement coupe dans les deux sens : rien de trivial ne relie deux joueurs,
+  mais quelque chose les relie toujours. **Plafond mesuré : quatre joueurs.**
+
+### Connu et non résolu
+
+- Le générateur ne produit pas de carte à six joueurs ou plus. Il refuse
+  proprement plutôt que d'en livrer une injouable ; `DEFAULT_RULES.maxPlayers`
+  vaut toujours 8. Voir BA-8 dans `TASKS.md`.
 
 ## [0.1.0] — 2026-07-30
 
