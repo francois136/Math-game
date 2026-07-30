@@ -160,7 +160,16 @@ famille de paraboles de flèches croissantes. Si l'une d'elles passe, la carte
 est regénérée. Après `maxGenerationAttempts` échecs, `ERR_MAP_GENERATION_FAILED`.
 
 C'est le garde-fou le plus important : il agit sur la cause plutôt que sur le
-symptôme.
+symptôme. Le générateur ne se contente pas d'espérer : il place les joueurs,
+répand un peu de couvert, puis **bouche** une à une les courbes qui restent
+ouvertes.
+
+Le plafond de couverture (`maxCoverage`, 0,35) est un plafond, pas une cible.
+Un duel n'en utilise qu'un tiers ; c'est à huit joueurs, où vingt-huit paires
+doivent être bouchées, qu'il devient contraignant. Mesuré sur 20 graines : à
+0,28 la génération à huit échoue une fois sur dix et coûte 300 ms, à 0,35 elle
+réussit toujours et coûte 100 ms. Les cartes de duel ne s'en trouvent pas plus
+encombrées, puisqu'elles n'approchent jamais le plafond.
 
 ### Bouclier de départ
 

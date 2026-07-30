@@ -88,7 +88,10 @@ export const DEFAULT_TRACE_PARAMS: TraceParams = Object.freeze({
 export const MapParamsSchema = z.object({
   bounds: AabbSchema,
   obstacleCount: z.object({ min: z.number().int().min(0), max: z.number().int().min(0) }),
-  /** Fraction of the map area obstacles may cover, in [0, 1). */
+  /**
+   * Ceiling on the fraction of the map area obstacles may cover — a ceiling,
+   * not a target. See docs/GAME_DESIGN.md for why the default is 0,35.
+   */
   maxCoverage: z.number().min(0).max(0.6),
   /**
    * How many spawn points to produce. Set by the rules engine from the number
@@ -115,7 +118,7 @@ export type MapParams = z.infer<typeof MapParamsSchema>;
 export const DEFAULT_MAP_PARAMS: MapParams = Object.freeze({
   bounds: { min: { x: -50, y: -30 }, max: { x: 50, y: 30 } },
   obstacleCount: { min: 6, max: 14 },
-  maxCoverage: 0.28,
+  maxCoverage: 0.35,
   spawnCount: 2,
   spawnMinDistance: 25,
   spawnClearance: 6,
