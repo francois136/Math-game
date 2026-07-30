@@ -90,6 +90,12 @@ export const MapParamsSchema = z.object({
   obstacleCount: z.object({ min: z.number().int().min(0), max: z.number().int().min(0) }),
   /** Fraction of the map area obstacles may cover, in [0, 1). */
   maxCoverage: z.number().min(0).max(0.6),
+  /**
+   * How many spawn points to produce. Set by the rules engine from the number
+   * of players: a two-player map that had to satisfy the sight-line check for
+   * eight seats would be needlessly hard to generate, and often uglier.
+   */
+  spawnCount: z.number().int().min(2).max(8),
   /** Minimum distance between two spawn points. */
   spawnMinDistance: z.number().positive(),
   /** Distance kept clear around each spawn point. */
@@ -110,6 +116,7 @@ export const DEFAULT_MAP_PARAMS: MapParams = Object.freeze({
   bounds: { min: { x: -50, y: -30 }, max: { x: 50, y: 30 } },
   obstacleCount: { min: 6, max: 14 },
   maxCoverage: 0.28,
+  spawnCount: 2,
   spawnMinDistance: 25,
   spawnClearance: 6,
   playerRadius: 1.5,
