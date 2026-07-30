@@ -5,7 +5,7 @@ import type { GameMap, Vec2 } from './geometry.js';
 import type { MapParams, MatchConfig, TraceParams } from './config.js';
 import type { Direction, TraceResult } from './shot.js';
 import type { MatchCommand, MatchEvent, MatchState } from './match.js';
-import type { MatchId, PlayerId, Seed, TeamId } from './ids.js';
+import type { LobbyCode, MatchId, PlayerId, Seed, SessionToken, TeamId } from './ids.js';
 
 /**
  * The seams between packages.
@@ -167,4 +167,10 @@ export interface ClockPort {
 export interface IdFactoryPort {
   matchId(): MatchId;
   playerId(): PlayerId;
+  lobbyCode(): LobbyCode;
+  /**
+   * Unguessable, and never derived from the PlayerId: holding one is what
+   * proves a returning client owns a seat.
+   */
+  sessionToken(): SessionToken;
 }

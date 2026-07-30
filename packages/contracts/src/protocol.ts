@@ -15,6 +15,11 @@ import { MAX_SOURCE_LENGTH } from './limits.js';
 /**
  * The wire protocol.
  *
+ * `lobby:add-bot` is deliberately absent. There is no bot yet, and a message
+ * the server can only answer with "not yet" is worse than no message: it makes
+ * a client write code for a feature that does not exist. It comes back with the
+ * bot, in phase 6.
+ *
  * One WebSocket, JSON frames, every inbound frame validated by the schemas
  * below before it reaches any game code. The server is authoritative: a client
  * frame is a *request*, never a fact.
@@ -67,8 +72,6 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('lobby:configure'), config: MatchConfigSchema }),
   z.object({ type: z.literal('lobby:set-team'), teamId: TeamIdSchema.nullable() }),
   z.object({ type: z.literal('lobby:ready'), ready: z.boolean() }),
-  /** Host only. */
-  z.object({ type: z.literal('lobby:add-bot') }),
   /** Host only. */
   z.object({ type: z.literal('lobby:remove-player'), playerId: PlayerIdSchema }),
   /** Host only. */
