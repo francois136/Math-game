@@ -40,10 +40,12 @@ export interface ContinuityCheckerPort {
   /**
    * Reject a function that is discontinuous anywhere it would be drawn.
    *
-   * Checks the piecewise junction points exactly and scans for jumps and poles
-   * elsewhere, comparing left and right limits within the tolerances carried by
-   * `params`. Returns the first discontinuity found, so the player gets one
-   * clear message rather than a list.
+   * Only the junctions between piecewise branches can be discontinuous: every
+   * function in the language is continuous on its own domain, so a single-branch
+   * expression is continuous by theorem. Left and right limits are compared
+   * there within the tolerances carried by `params`. Returns the first
+   * discontinuity found, so the player gets one clear message rather than a
+   * list.
    */
   check(
     expression: ParsedExpression,
@@ -67,6 +69,13 @@ export interface TraceTarget {
 
 export interface TraceInput {
   readonly expression: ParsedExpression;
+  /**
+   * How to evaluate that expression.
+   *
+   * Injected rather than imported so that @fw/physics never depends on
+   * @fw/core-math: the two are siblings, not a stack (ADR 0009).
+   */
+  readonly evaluator: EvaluatorPort;
   /** The shooter's position; the curve is translated to pass through it. */
   readonly origin: Vec2;
   readonly direction: Direction;
