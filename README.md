@@ -12,10 +12,12 @@ La seule règle imposée aux fonctions est qu'elles soient **continues** là où
 elles sont tracées. Tout le reste — asymptotes, sorties de domaine, bords de
 carte — arrête simplement le tir.
 
+![Un tir en cours : la courbe part d'Anne et s'arrête au bord du terrain](docs/images/tir.png)
+
 ## État
 
-**Phase 5 : le jeu se voit.** Serveur, salons et interface graphique : deux
-navigateurs, un code d'invitation, et une courbe qui part.
+**Phase 6 : le jeu est complet.** Serveur, salons, interface, bots, rejeux,
+équilibrage mesuré.
 
 ```bash
 pnpm install && pnpm run typecheck
@@ -41,8 +43,12 @@ L'hôte peut aussi passer la partie en **résolution simultanée** : chacun écr
 sa fonction, puis tout se résout d'un coup — deux joueurs qui se touchent
 meurent tous les deux.
 
-Ce qui manque : la documentation finale et le guide de déploiement. Voir
-[`TASKS.md`](TASKS.md).
+![Le salon : joueurs, bots, difficulté du terrain](docs/images/salon.png)
+
+Le salon. L'hôte règle la difficulté du terrain, ajoute des bots, et voit qui
+est prêt.
+
+Ce qui reste ouvert est listé à la fin de [`TASKS.md`](TASKS.md).
 
 ## Installation
 
@@ -61,6 +67,7 @@ pnpm run check           # format, lint, typecheck, tests
 | `pnpm run lint`      | ESLint avec les règles typées                                     |
 | `pnpm run test`      | Vitest, unitaires et propriétés                                   |
 | `pnpm run format`    | Prettier en écriture                                              |
+| `pnpm run balance`   | Campagne d'équilibrage : des bots jouent, un tableau sort         |
 
 ## Les paquets
 
@@ -85,6 +92,7 @@ fichiers ou l'horloge. Ces quatre paquets se testent intégralement en mémoire.
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)     | Paquets, flux de données, dépendances                   |
 | [`docs/GAME_DESIGN.md`](docs/GAME_DESIGN.md)       | Règles détaillées, grammaire des fonctions, équilibrage |
 | [`docs/PROTOCOL.md`](docs/PROTOCOL.md)             | Messages réseau et machine à états                      |
+| [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)         | Construire, servir, mettre derrière un proxy            |
 | [`docs/AGENT_WORKFLOW.md`](docs/AGENT_WORKFLOW.md) | Prendre une tâche, brancher, ouvrir une PR              |
 | [`docs/adr/`](docs/adr)                            | Les décisions structurantes et leurs raisons            |
 | [`TASKS.md`](TASKS.md)                             | Le backlog, découpé par agent, avec ses dépendances     |

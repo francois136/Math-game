@@ -1,6 +1,6 @@
 {
   "name": "@fw/client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Web client: canvas rendering, function input with live preview, lobby and match UI.",

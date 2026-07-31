@@ -3,7 +3,9 @@
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Versions : [SemVer](https://semver.org/lang/fr/).
 
-## [Non publié]
+## [0.2.0] — 2026-07-31
+
+Phases 2 à 6 : le jeu existe, se joue à huit, contre des bots, et se rejoue.
 
 ### Ajouté
 
@@ -197,7 +199,7 @@ Versions : [SemVer](https://semver.org/lang/fr/).
 - `ERR_NOT_ENOUGH_TEAMS` : une partie en équipes à une seule équipe est refusée
   au lieu de se terminer d'elle-même au premier tour.
 
-### Décidé, en cours d'implémentation
+### Décidé
 
 - La vérification de continuité n'inspecte que les raccords de morceaux : les
   fonctions du langage étant continues sur leur domaine, une expression à un
@@ -213,12 +215,26 @@ Versions : [SemVer](https://semver.org/lang/fr/).
 - [ADR 0010](docs/adr/0010-coverage-ceiling.md) — plafond de couverture à 0,35.
 - [ADR 0011](docs/adr/0011-placement-rule-must-cut-both-ways.md) — la règle de
   placement coupe dans les deux sens : rien de trivial ne relie deux joueurs,
-  mais quelque chose les relie toujours. **Plafond mesuré : quatre joueurs.**
+  mais quelque chose les relie toujours. _Amendée par 0014 et 0015 : « une
+  parabole passe » n'est plus exigé qu'en `facile`._
+- [ADR 0012](docs/adr/0012-four-players.md) — plafond de quatre joueurs.
+  _Amendée par 0015 : le plafond dépend maintenant de la difficulté._
 - [ADR 0013](docs/adr/0013-shooting-along-both-axes.md) — `x = f(y)` s'obtient
   par transposition, pas par un second tracer.
 - [ADR 0014](docs/adr/0014-difficulty-and-team-separation.md) — trois
   difficultés adossées à la connexité monotone, et deux distances de placement
   selon le camp.
+- [ADR 0015](docs/adr/0015-the-board-grows-with-the-lobby.md) — le terrain
+  grandit avec le salon, les distances sont en unités, le plafond de joueurs
+  dépend de la difficulté.
+- [ADR 0016](docs/adr/0016-a-bot-searches-it-does-not-solve.md) — un bot cherche
+  par échantillonnage, il ne résout pas.
+- [ADR 0017](docs/adr/0017-a-player-fits-inside-the-sealed-band.md) — un joueur
+  tient dans la bande scellée : `playerRadius` est borné.
+- [ADR 0018](docs/adr/0018-a-replay-stores-what-was-done.md) — un rejeu
+  enregistre les décisions, pas les tracés.
+- [ADR 0019](docs/adr/0019-simultaneous-shots-are-all-fired-at-once.md) — en
+  simultané, tous les tirs partent du même instant.
 
 ### Corrigé
 
@@ -279,4 +295,5 @@ posé, c'est ce contre quoi six agents vont pouvoir coder en parallèle.
      push de balises (403). À pousser depuis une machine ayant les droits :
      `git push origin v0.1.0`. -->
 
+[0.2.0]: https://github.com/francois136/Math-game/compare/v0.1.0...v0.2.0
 [non publié]: https://github.com/francois136/Math-game/commits/main

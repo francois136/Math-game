@@ -111,7 +111,7 @@ Demandé par le superviseur avant l'ouverture de la phase 6.
 
 ---
 
-## Phase 6 — Équilibrage, bot, rejeux
+## Phase 6 — Équilibrage, bot, rejeux ☑
 
 | #    | Agent   | Tâche                                                                                                                     | Dépend de  | État |
 | ---- | ------- | ------------------------------------------------------------------------------------------------------------------------- | ---------- | ---- |
@@ -122,7 +122,7 @@ Demandé par le superviseur avant l'ouverture de la phase 6.
 | BA-4 | Server  | Export de rejeu JSON en fin de partie, 68x plus petit que l'état (ADR 0018)                                               | SV-10      | ☑    |
 | BA-5 | Client  | Lecture d'un rejeu, pas à pas, curseur et narration                                                                       | BA-4, CL-6 | ☑    |
 | BA-6 | Rules   | Résolution simultanée : tirs tracés contre le même état, double KO assumé (ADR 0019)                                      | RU-8       | ☑    |
-| BA-7 | Lead    | Documentation finale, captures, guide de déploiement                                                                      | tout       | ☐    |
+| BA-7 | Lead    | Documentation finale, captures, guide de déploiement                                                                      | tout       | ☑    |
 
 ---
 
@@ -155,6 +155,11 @@ Demandé par le superviseur avant l'ouverture de la phase 6.
 - La connexité monotone est discrétisée en 220 colonnes. Un obstacle plus fin
   qu'une colonne peut lui échapper. Le générateur n'en produit pas d'aussi fin ;
   une carte JSON écrite à la main le pourrait.
-- En `difficile`, personne n'a encore mesuré combien de tirs un humain met à
-  toucher. Les 0,00 % mesurés sont ceux d'un tireur aléatoire, ce qui est le
-  but ; le nombre qui compte viendra de BA-3.
+- En `difficile`, personne n'a mesuré combien de tirs un **humain** met à
+  toucher. La campagne mesure des bots ; le bot `redoutable` y met 14 tours
+  contre 5 ailleurs, mais un humain ne joue pas comme un échantillonneur.
+- **Accessibilité** (CL-9) : les contrastes et la navigation au clavier n'ont
+  jamais été audités. Le plateau est un `canvas` avec un `aria-label` et rien
+  d'autre — une partie n'est pas jouable au lecteur d'écran.
+- Le mode simultané n'a pas d'indicateur de temps restant. À huit joueurs, on ne
+  sait pas si le round attend quelqu'un ou l'échéance.
