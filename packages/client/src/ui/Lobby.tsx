@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   BOT_LEVEL_LABELS,
   maxSeatsFor,
@@ -27,7 +28,7 @@ interface Props {
   readonly onSimultaneous: (together: boolean) => void;
   readonly onAddBot: (level: BotLevel) => void;
   readonly onRemove: (playerId: PlayerId) => void;
-  readonly onStart: () => void;
+  readonly onStart: (seed: string | null) => void;
 }
 
 export function Lobby({
@@ -40,6 +41,9 @@ export function Lobby({
   onRemove,
   onStart,
 }: Props): React.JSX.Element {
+  // The seed lives here rather than in the app state: it is a lobby control,
+  // it never leaves this screen, and nobody else needs to know about it.
+  const [seed, setSeed] = useState('');
   const me = lobby.members.find((member) => member.playerId === selfId);
   const isHost = lobby.hostId === selfId;
   const seated = lobby.members.filter((member) => !member.isSpectator);
@@ -150,6 +154,29 @@ export function Lobby({
         </div>
       )}
 
+      {isHost && (
+        <>
+          <label className="etiquette" htmlFor="graine">
+            Graine (facultatif)
+          </label>
+          <input
+            id="graine"
+            className="saisie"
+            data-testid="graine"
+            placeholder="au hasard"
+            value={seed}
+            maxLength={64}
+            onChange={(event) => {
+              setSeed(event.target.value);
+            }}
+          />
+          <p className="aide">
+            Deux parties lancées avec la même graine se jouent sur le même terrain, aux mêmes
+            places. Laisse vide pour un terrain neuf.
+          </p>
+        </>
+      )}
+
       <div className="rangee">
         {me !== undefined && !me.isSpectator && (
           <button
@@ -168,7 +195,9 @@ export function Lobby({
             data-testid="lancer"
             className="primaire"
             disabled={tooMany}
-            onClick={onStart}
+            onClick={() => {
+              onStart(seed.trim() === '' ? null : seed.trim());
+            }}
           >
             Lancer la partie ({seated.length} joueur{seated.length > 1 ? 's' : ''})
           </button>

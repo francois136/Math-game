@@ -31,6 +31,10 @@ Phases 2 à 6 : le jeu existe, se joue à huit, contre des bots, et se rejoue.
     inventée. Mesuré : 0,00 % de réussite sur 12 000 tirs aléatoires, contre
     0,16 % en `facile`, sur des terrains qui restent traversables par
     construction.
+- **Une graine peut être choisie au lancement.** Deux parties lancées avec la
+  même graine se jouent sur le même terrain, aux mêmes places : de quoi refaire
+  une partie qu'on a aimée, ou en montrer une à quelqu'un.
+
 - **La résolution simultanée**, réglable au salon et désactivée par défaut.
   Chacun écrit sa fonction, puis tout se résout d'un coup — à huit joueurs, cela
   remplace sept tours d'attente par un.
@@ -246,6 +250,15 @@ Phases 2 à 6 : le jeu existe, se joue à huit, contre des bots, et se rejoue.
   correction datée dans [ADR 0004](docs/adr/0004-determinism.md).
 - La CI passait en local et échouait sur un dépôt propre : le lint typé lisait
   les déclarations produites par la compilation, et tournait avant elle.
+
+### Corrigé après coup
+
+- **Un test bout en bout était instable**, et la CI l'a montré plutôt que ce
+  dépôt. Il faisait gagner un bot sans fixer la graine, or la durée d'une partie
+  varie énormément d'une graine à l'autre : mesuré entre 4 et 108 tours sur huit
+  graines. Le test tombait dans la queue longue une fois sur quelques-unes. Il
+  fixe désormais sa graine — d'où le champ de graine ci-dessus, qui sert autant
+  au joueur qu'au test — et passe de 21 s à 6 s.
 
 ### Connu et non résolu
 

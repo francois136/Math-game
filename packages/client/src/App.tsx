@@ -267,8 +267,8 @@ export function App(): React.JSX.Element {
           onRemove={(playerId) => {
             send({ type: 'lobby:remove-player', playerId });
           }}
-          onStart={() => {
-            send({ type: 'match:start', seed: null });
+          onStart={(seed) => {
+            send({ type: 'match:start', seed });
           }}
         />
       )}

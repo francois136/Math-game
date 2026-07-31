@@ -240,6 +240,10 @@ test('a finished match can be downloaded and watched again', async ({ browser })
   await page.getByTestId('creer').click();
   await page.getByTestId('ajouter-bot-redoutable').click();
   await page.getByTestId('pret').click();
+  // A fixed seed, because how long a bot takes to win swings wildly: measured
+  // between 4 and 108 turns across eight seeds, so an unseeded match makes this
+  // test a coin toss. On this one the bot wins on its second shot.
+  await page.getByTestId('graine').fill('anne');
   await page.getByTestId('lancer').click();
   await expect(page.getByTestId('plateau')).toBeVisible();
 
@@ -247,15 +251,18 @@ test('a finished match can be downloaded and watched again', async ({ browser })
   // actionable again, which is exactly "the bot has played and the turn is
   // back" — polling `isDisabled` would read the bot's turn as the end of the
   // match and leave after one pass.
-  for (let turn = 0; turn < 80; turn += 1) {
+  for (let turn = 0; turn < 20; turn += 1) {
     if ((await page.getByTestId('revoir-rejeu').count()) > 0) break;
     try {
-      await page.getByTestId('passer').click({ timeout: 20_000 });
+      // Five seconds is generous for a bot turn and short enough that the last
+      // pass — the one the finished match will never accept — does not sit
+      // here waiting for a button that is disabled for good.
+      await page.getByTestId('passer').click({ timeout: 5_000 });
     } catch {
       break; // the match ended while we waited for our turn to come back
     }
   }
-  await expect(page.getByTestId('revoir-rejeu')).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId('revoir-rejeu')).toBeVisible();
 
   // The replay is a real file, a few kilobytes of it.
   const download = page.waitForEvent('download');
