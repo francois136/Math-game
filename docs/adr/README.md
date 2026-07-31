@@ -21,6 +21,7 @@ pourquoi.
 | [0013](0013-shooting-along-both-axes.md)           | `x = f(y)` par transposition, pas par un second tracer               | accepté         |
 | [0014](0014-difficulty-and-team-separation.md)     | Trois difficultés, et une distance par camp                          | amendé par 0015 |
 | [0015](0015-the-board-grows-with-the-lobby.md)     | Le terrain grandit avec le salon ; plafond par difficulté            | accepté         |
+| [0016](0016-a-bot-searches-it-does-not-solve.md)   | Un bot cherche par échantillonnage, il ne résout pas                 | accepté         |
 
 ## Quand écrire une ADR
 

@@ -29,6 +29,31 @@ Versions : [SemVer](https://semver.org/lang/fr/).
     inventée. Mesuré : 0,00 % de réussite sur 12 000 tirs aléatoires, contre
     0,16 % en `facile`, sur des terrains qui restent traversables par
     construction.
+- **`@fw/bot` : de quoi jouer seul.** L'hôte ajoute des bots au salon, à trois
+  niveaux, et ils prennent leur tour sans qu'on leur demande.
+
+  Un bot **cherche, il ne résout pas**
+  ([ADR 0016](docs/adr/0016-a-bot-searches-it-does-not-solve.md)) : il tire une
+  famille de fonctions et ses paramètres, écrit la source, la trace, regarde de
+  combien il a raté, recommence. Il ne pourrait pas faire autrement — le
+  générateur construit des terrains où aucune famille simple ne relie deux
+  joueurs. Il écrit du **texte** dans le même parseur qu'un joueur, franchit la
+  même vérification de continuité, et ne peut donc rien soumettre qu'un joueur
+  ne pourrait écrire.
+
+  Mesuré sur soixante duels par niveau, boucliers retirés : `debutant` élimine
+  en ~40 tours, `confirme` en ~20, `redoutable` en ~7. Sur un terrain
+  `difficile`, `redoutable` ne conclut que 27 duels sur 60 en 120 tours — la
+  difficulté porte bien sur le problème, pas sur l'interface.
+
+  Sans bouclier de départ, `redoutable` gagne au premier tour deux fois sur
+  cinq. Le bouclier de deux tours n'est donc pas un confort : c'est ce qui
+  empêche une partie d'être décidée avant d'avoir commencé. Un test le fixe.
+
+- `lobby:add-bot` revient dans le protocole avec le bot qu'il attendait, et
+  `LobbyMember` gagne `botLevel`. Un bot se retire par `lobby:remove-player`,
+  comme n'importe qui.
+
 - **Le jeu monte à huit joueurs** ([ADR 0015](docs/adr/0015-the-board-grows-with-the-lobby.md)).
   Le plafond de quatre n'était pas la limite qu'on croyait. Deux corrections :
   - **Le terrain grandit avec le salon** (`sizedForSeats`) : ×1 jusqu'à quatre
@@ -128,12 +153,6 @@ Versions : [SemVer](https://semver.org/lang/fr/).
 - La CI passait en local et échouait sur un dépôt propre : le lint typé lisait
   les déclarations produites par la compilation, et tournait avant elle.
 
-### Retiré
-
-- `lobby:add-bot` quitte le protocole jusqu'à ce qu'un bot existe (phase 6).
-  Un message auquel le serveur ne sait répondre que « pas encore » invite un
-  client à écrire du code pour une fonctionnalité absente.
-
 ### Connu et non résolu
 
 - **Le rayon de hitbox peut défaire la règle de placement.** Une cible plus
@@ -149,6 +168,9 @@ Versions : [SemVer](https://semver.org/lang/fr/).
 - Générer une carte à sept sièges en `difficile` coûte 1,2 s, et le serveur est
   mono-thread : c'est du gel pour tous les salons, une fois par partie. Mesuré
   et accepté pour l'instant ; à sortir du fil principal si cela gêne.
+- Un bot `redoutable` coûte environ 70 ms de serveur bloqué par coup, et le
+  serveur est mono-thread. Une table de huit bots redoutables gèle donc un demi-
+  seconde entre deux coups humains. Mesuré, accepté pour l'instant.
 
 ## [0.1.0] — 2026-07-30
 

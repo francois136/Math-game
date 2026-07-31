@@ -3,6 +3,7 @@ import type { ClockPort, RulesDeps } from '@fw/contracts';
 import { continuity, evaluator, parser } from '@fw/core-math';
 import { maps, tracer } from '@fw/physics';
 import { rules } from '@fw/rules';
+import { bot } from '@fw/bot';
 import { cryptoIds } from './ids.js';
 import { GameServer } from './server.js';
 import { listen } from './transport.js';
@@ -13,7 +14,7 @@ const clock: ClockPort = { nowMs: () => Date.now() };
 const engine: RulesDeps = { parser, evaluator, continuity, tracer, maps };
 const port = Number(env['FW_PORT'] ?? '8787');
 
-const game = new GameServer({ rules, engine, ids: cryptoIds, clock });
+const game = new GameServer({ rules, bot, engine, ids: cryptoIds, clock });
 listen(game, port);
 
 stdout.write(`FunctionWars écoute sur le port ${String(port)}\n`);

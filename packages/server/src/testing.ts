@@ -14,6 +14,7 @@ import {
 import { continuity, evaluator, parser } from '@fw/core-math';
 import { maps, tracer } from '@fw/physics';
 import { rules } from '@fw/rules';
+import { bot } from '@fw/bot';
 import { GameServer, type Connection, type ServerDeps } from './server.js';
 
 /**
@@ -108,6 +109,6 @@ export class Client implements Connection {
 
 export function serverWith(clock = new TestClock()): { game: GameServer; clock: TestClock } {
   const engine: RulesDeps = { parser, evaluator, continuity, tracer, maps };
-  const deps: ServerDeps = { rules, engine, ids: countingIds(), clock };
+  const deps: ServerDeps = { rules, bot, engine, ids: countingIds(), clock };
   return { game: new GameServer(deps), clock };
 }
