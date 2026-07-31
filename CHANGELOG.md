@@ -291,9 +291,9 @@ posé, c'est ce contre quoi six agents vont pouvoir coder en parallèle.
 - [ADR 0007](docs/adr/0007-continuity-as-only-validation.md) — la continuité
   est la seule règle de validation.
 
-<!-- La balise v0.1.0 existe en local ; le proxy Git de la session refuse le
-     push de balises (403). À pousser depuis une machine ayant les droits :
-     `git push origin v0.1.0`. -->
+<!-- Les balises v0.1.0 et v0.2.0 existent en local ; le proxy Git de la session
+     refuse le push de balises (403). À pousser depuis une machine ayant les
+     droits : `git push origin v0.1.0 v0.2.0`. -->
 
 [0.2.0]: https://github.com/francois136/Math-game/compare/v0.1.0...v0.2.0
 [non publié]: https://github.com/francois136/Math-game/commits/main
