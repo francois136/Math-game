@@ -1,4 +1,4 @@
-import type { Aabb, Direction, Vec2 } from '@fw/contracts';
+import type { Aabb, Axis, Direction, Vec2 } from '@fw/contracts';
 import { evaluate, parse } from '@fw/core-math';
 
 /**
@@ -18,6 +18,8 @@ const SAMPLES = 400;
 export interface PreviewRequest {
   readonly source: string;
   readonly origin: Vec2;
+  /** `x` draws `y = f(x)`, `y` draws `x = f(y)` (ADR 0013). */
+  readonly axis: Axis;
   readonly direction: Direction;
   readonly bounds: Aabb;
 }
@@ -39,7 +41,7 @@ export function preview(request: PreviewRequest, enabled: boolean): Preview {
   if (!enabled) return { kind: 'off' };
   if (request.source.trim() === '') return { kind: 'empty' };
 
-  const parsed = parse(request.source);
+  const parsed = parse(request.source, request.axis);
   if (!parsed.ok) return { kind: 'invalid', message: parsed.error.message };
 
   const atZero = evaluate(parsed.value.ast, 0);
@@ -50,9 +52,16 @@ export function preview(request: PreviewRequest, enabled: boolean): Preview {
     };
   }
 
+  // Along `x` the walk is in x and the value is a y; along `y`, the other way
+  // round. Naming them `along` and `across` keeps the two cases one piece of
+  // code instead of two.
+  const along = request.axis === 'x' ? 'x' : ('y' as const);
+  const across = request.axis === 'x' ? 'y' : ('x' as const);
   const sign = request.direction === 'increasing' ? 1 : -1;
   const reach =
-    sign === 1 ? request.bounds.max.x - request.origin.x : request.origin.x - request.bounds.min.x;
+    sign === 1
+      ? request.bounds.max[along] - request.origin[along]
+      : request.origin[along] - request.bounds.min[along];
 
   const points: Vec2[] = [];
   for (let i = 0; i <= SAMPLES; i += 1) {
@@ -60,12 +69,13 @@ export function preview(request: PreviewRequest, enabled: boolean): Preview {
     const value = evaluate(parsed.value.ast, u);
     if (!value.defined) break; // out of domain: the drawing stops, like the shot would
 
-    const point = {
-      x: request.origin.x + u,
-      y: request.origin.y + value.value - atZero.value,
-    };
-    // Off the top or bottom of the field: keep the point that leaves, drop the rest.
-    if (point.y < request.bounds.min.y || point.y > request.bounds.max.y) {
+    const point =
+      along === 'x'
+        ? { x: request.origin.x + u, y: request.origin.y + value.value - atZero.value }
+        : { x: request.origin.x + value.value - atZero.value, y: request.origin.y + u };
+
+    // Off the side of the field: keep the point that leaves, drop the rest.
+    if (point[across] < request.bounds.min[across] || point[across] > request.bounds.max[across]) {
       points.push(point);
       break;
     }

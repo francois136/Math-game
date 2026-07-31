@@ -5,6 +5,7 @@ import { preview } from './preview.js';
 const REQUEST = {
   source: 'x/2',
   origin: { x: -20, y: 0 },
+  axis: 'x' as const,
   direction: 'increasing' as const,
   bounds: DEFAULT_MAP_PARAMS.bounds,
 };
@@ -90,6 +91,28 @@ describe('what it deliberately does not know', () => {
     const result = preview(REQUEST, true);
     if (result.kind !== 'curve') throw new Error('no curve');
     expect(result.points.length).toBeGreaterThan(100);
-    expect(Object.keys(REQUEST)).toEqual(['source', 'origin', 'direction', 'bounds']);
+    expect(Object.keys(REQUEST)).toEqual(['source', 'origin', 'axis', 'direction', 'bounds']);
+  });
+});
+
+describe('along y', () => {
+  const upward = { ...REQUEST, axis: 'y' as const, source: 'y/2' };
+
+  it('walks in y and spreads in x', () => {
+    const result = preview(upward, true);
+    expect(result.kind).toBe('curve');
+    if (result.kind !== 'curve') return;
+    expect(result.points[0]).toEqual(upward.origin);
+    expect(result.points.at(-1)?.y).toBeGreaterThan(upward.origin.y);
+  });
+
+  it('reads the player’s own letter', () => {
+    // The field says `x = f(y)`, so `y` is what a player types.
+    expect(preview(upward, true).kind).toBe('curve');
+    expect(preview({ ...upward, source: 'x/2' }, true).kind).toBe('invalid');
+  });
+
+  it('is still off when the switch is off', () => {
+    expect(preview(upward, false)).toEqual({ kind: 'off' });
   });
 });

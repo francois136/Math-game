@@ -1,13 +1,24 @@
-import type { LobbyState } from '@fw/contracts';
+import type { Difficulty, LobbyState } from '@fw/contracts';
+
+const DIFFICULTIES: readonly { value: Difficulty; label: string; hint: string }[] = [
+  { value: 'facile', label: 'Facile', hint: 'Une parabole relie toujours deux joueurs.' },
+  {
+    value: 'moderee',
+    label: 'Modérée',
+    hint: 'Une fonction continue passe. Laquelle, à toi de voir.',
+  },
+  { value: 'difficile', label: 'Difficile', hint: 'Une fonction passe, mais aucune parabole.' },
+];
 
 interface Props {
   readonly lobby: LobbyState;
   readonly selfId: string | null;
   readonly onReady: (ready: boolean) => void;
+  readonly onDifficulty: (difficulty: Difficulty) => void;
   readonly onStart: () => void;
 }
 
-export function Lobby({ lobby, selfId, onReady, onStart }: Props): React.JSX.Element {
+export function Lobby({ lobby, selfId, onReady, onDifficulty, onStart }: Props): React.JSX.Element {
   const me = lobby.members.find((member) => member.playerId === selfId);
   const isHost = lobby.hostId === selfId;
   const seated = lobby.members.filter((member) => !member.isSpectator);
@@ -35,6 +46,27 @@ export function Lobby({ lobby, selfId, onReady, onStart }: Props): React.JSX.Ele
           </li>
         ))}
       </ul>
+
+      <div className="sens" role="group" aria-label="Difficulté du terrain">
+        {DIFFICULTIES.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            data-testid={`difficulte-${option.value}`}
+            className={lobby.config.map.difficulty === option.value ? 'actif' : ''}
+            disabled={!isHost}
+            title={option.hint}
+            onClick={() => {
+              onDifficulty(option.value);
+            }}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+      <p className="aide" data-testid="aide-difficulte">
+        {DIFFICULTIES.find((option) => option.value === lobby.config.map.difficulty)?.hint ?? ''}
+      </p>
 
       <div className="rangee">
         {me !== undefined && !me.isSpectator && (

@@ -89,6 +89,22 @@ export const DEFAULT_TRACE_PARAMS: TraceParams = Object.freeze({
   maxArcLength: 400,
 });
 
+/**
+ * How hard the field is to shoot across.
+ *
+ * `facile` — a simple parabola joins every pair. You will find a shot by
+ *   trying; the field is a warm-up.
+ * `moderee` — *some* continuous function joins every pair, and the generator
+ *   proves it, but nothing promises it is a parabola. You have to look.
+ * `difficile` — the same guarantee, and no parabola of the wide family gets
+ *   through at all. Every kill has to be invented.
+ *
+ * In all three, nothing trivial — the straight line and barely-bent arcs — ever
+ * connects two players. That rule is not a difficulty setting.
+ */
+export const DifficultySchema = z.enum(['facile', 'moderee', 'difficile']);
+export type Difficulty = z.infer<typeof DifficultySchema>;
+
 /** Parameters of the procedural map generator. */
 export const MapParamsSchema = z.object({
   bounds: AabbSchema,
@@ -104,8 +120,22 @@ export const MapParamsSchema = z.object({
    * eight seats would be needlessly hard to generate, and often uglier.
    */
   spawnCount: z.number().int().min(2).max(MAX_PLAYERS),
-  /** Minimum distance between two spawn points. */
-  spawnMinDistance: z.number().positive(),
+  difficulty: DifficultySchema,
+  /**
+   * Team of each seat, by index, or null for a player on their own side.
+   *
+   * The generator needs it because two team-mates may stand close together
+   * while two enemies may not: a duel decided by who is nearer is not a duel.
+   * Set by the rules engine from the lobby; its length matches `spawnCount`.
+   */
+  spawnTeams: z.array(z.number().int().nonnegative().nullable()).max(MAX_PLAYERS),
+  /** Minimum distance between two seats on the same side. */
+  spawnMinDistanceAllies: z.number().positive(),
+  /**
+   * Minimum distance between two seats on opposing sides, as a fraction of the
+   * map's width. See docs/GAME_DESIGN.md for why the default is what it is.
+   */
+  enemySeparationFraction: z.number().min(0).max(1),
   /** Distance kept clear around each spawn point. */
   spawnClearance: z.number().positive(),
   /** Hitbox radius of a player. */
@@ -125,7 +155,10 @@ export const DEFAULT_MAP_PARAMS: MapParams = Object.freeze({
   obstacleCount: { min: 6, max: 14 },
   maxCoverage: 0.35,
   spawnCount: 2,
-  spawnMinDistance: 25,
+  difficulty: 'facile',
+  spawnTeams: [null, null],
+  spawnMinDistanceAllies: 12,
+  enemySeparationFraction: 0.45,
   spawnClearance: 6,
   playerRadius: 1.5,
   sightLineSamples: 9,

@@ -52,10 +52,18 @@ export function createMatch(setup: MatchSetup, deps: RulesDeps): Result<MatchSta
 
   // The generator is told how many seats to place; the configured value is a
   // default for a lobby that has not filled yet (ADR 0008).
+  // The generator is told how many seats and who is on whose side: two
+  // team-mates may stand close, two enemies may not (ADR 0014).
+  const teams = [...new Set(setup.players.map((player) => player.teamId))].filter(
+    (team): team is NonNullable<typeof team> => team !== null,
+  );
+  const spawnTeams = setup.players.map((player) =>
+    player.teamId === null ? null : teams.indexOf(player.teamId),
+  );
   const map =
     setup.map !== null
       ? ok(setup.map)
-      : deps.maps.generate(setup.seed, { ...mapParams, spawnCount: count });
+      : deps.maps.generate(setup.seed, { ...mapParams, spawnCount: count, spawnTeams });
   if (!map.ok) return map;
 
   if (map.value.spawns.length < count) {
@@ -224,7 +232,7 @@ function applyFire(
     return rejected(state, fwError('ERR_PLAYER_ELIMINATED', {}));
   }
 
-  const parsed = deps.parser.parse(shot.source);
+  const parsed = deps.parser.parse(shot.source, shot.axis);
   if (!parsed.ok) return rejected(state, parsed.error);
 
   const budget = state.config.rules.complexityBudget;
@@ -246,6 +254,7 @@ function applyFire(
     expression: parsed.value,
     evaluator: deps.evaluator,
     origin: shooter.origin,
+    axis: shot.axis,
     direction: shot.direction,
     map: state.map,
     targets: targetsFor(state, shooter),
@@ -276,16 +285,21 @@ function applyFire(
 }
 
 /**
- * The stretch of `x − x₀` the curve could possibly cover.
+ * The stretch of the shot's own variable the curve could possibly cover.
  *
- * The continuity check only has to look where the curve would be drawn: a
+ * Along `x` that is `x − x₀`, along `y` it is `y − y₀` (ADR 0013). The
+ * continuity check only has to look where the curve would be drawn: a
  * discontinuity behind the shooter, or past the far edge of the map, costs the
  * player nothing and must not cost them their turn.
  */
 function intervalFor(state: MatchState, shooter: Player, shot: ShotRequest): ContinuityInterval {
+  const low = shot.axis === 'x' ? state.map.bounds.min.x : state.map.bounds.min.y;
+  const high = shot.axis === 'x' ? state.map.bounds.max.x : state.map.bounds.max.y;
+  const start = shot.axis === 'x' ? shooter.origin.x : shooter.origin.y;
+
   return shot.direction === 'increasing'
-    ? { from: 0, to: state.map.bounds.max.x - shooter.origin.x }
-    : { from: state.map.bounds.min.x - shooter.origin.x, to: 0 };
+    ? { from: 0, to: high - start }
+    : { from: low - start, to: 0 };
 }
 
 /**

@@ -3,6 +3,7 @@ import {
   LobbyCodeSchema,
   PROTOCOL_VERSION,
   SessionTokenSchema,
+  type Axis,
   type ClientMessage,
   type Direction,
 } from '@fw/contracts';
@@ -86,6 +87,7 @@ export function App(): React.JSX.Element {
   const [state, dispatch] = useReducer(reduce, initialState);
   const [source, setSource] = useState('');
   const [direction, setDirection] = useState<Direction>('increasing');
+  const [axis, setAxis] = useState<Axis>('x');
   const [previewEnabled, setPreviewEnabled] = useState(loadPreviewPreference);
   const transport = useRef<Transport | null>(null);
 
@@ -154,10 +156,10 @@ export function App(): React.JSX.Element {
   const preview = useMemo(() => {
     if (state.match === null || me === null) return { kind: 'off' as const };
     return computePreview(
-      { source, origin: me.origin, direction, bounds: state.match.map.bounds },
+      { source, origin: me.origin, axis, direction, bounds: state.match.map.bounds },
       previewEnabled,
     );
-  }, [state.match, me, source, direction, previewEnabled]);
+  }, [state.match, me, source, axis, direction, previewEnabled]);
 
   if (state.status === 'offline' && state.lobby === null) {
     return (
@@ -203,6 +205,16 @@ export function App(): React.JSX.Element {
           onReady={(ready) => {
             send({ type: 'lobby:ready', ready });
           }}
+          onDifficulty={(difficulty) => {
+            if (state.lobby === null) return;
+            send({
+              type: 'lobby:configure',
+              config: {
+                ...state.lobby.config,
+                map: { ...state.lobby.config.map, difficulty },
+              },
+            });
+          }}
           onStart={() => {
             send({ type: 'match:start', seed: null });
           }}
@@ -231,19 +243,21 @@ export function App(): React.JSX.Element {
 
           <ShotComposer
             source={source}
+            axis={axis}
             direction={direction}
             preview={preview}
             previewEnabled={previewEnabled}
             disabled={!myTurn || state.match.phase === 'ended'}
             validation={state.validation}
             onSource={setSource}
+            onAxis={setAxis}
             onDirection={setDirection}
             onPreviewEnabled={setPreviewEnabled}
             onValidate={() => {
-              send({ type: 'shot:validate', source, direction });
+              send({ type: 'shot:validate', source, axis, direction });
             }}
             onFire={() => {
-              send({ type: 'shot:fire', shot: { source, direction } });
+              send({ type: 'shot:fire', shot: { source, axis, direction } });
               dispatch({ kind: 'dismiss-error' });
             }}
             onPass={() => {

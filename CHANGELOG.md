@@ -7,6 +7,33 @@ Versions : [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- **Tirer le long de `y`.** Un tir porte maintenant un axe : `y = f(x)` comme
+  avant, ou `x = f(y)`, qui trace une courbe couchée. Deux joueurs l'un
+  au-dessus de l'autre n'étaient reliés par aucune fonction de `x` ; ils le sont
+  par une fonction de `y`. Aucune ligne de collision, de pas adaptatif ou
+  d'asymptote n'est écrite deux fois : le monde est tourné d'un quart de tour,
+  tracé, puis retourné ([ADR 0013](docs/adr/0013-shooting-along-both-axes.md)).
+  Le parseur accepte la lettre de l'axe choisi et refuse l'autre. La
+  prévisualisation, le client, le serveur et la CLI suivent l'axe.
+- **Trois difficultés de terrain**, choisies par l'hôte dans le salon
+  ([ADR 0014](docs/adr/0014-difficulty-and-team-separation.md)) :
+  - `facile` — le comportement précédent : rien de trivial ne relie deux
+    joueurs, mais une parabole simple passe toujours.
+  - `moderee` — la garantie porte sur l'existence d'une fonction continue, pas
+    sur sa simplicité. `connectivity.ts` la vérifie exactement : le terrain est
+    découpé en colonnes perpendiculaires au balayage, les intervalles libres
+    voisins qui se chevauchent sont reliés, et un chemin dans ce graphe **est**
+    le graphe d'une fonction continue.
+  - `difficile` — la même garantie, plus l'exigence inverse : aucune parabole de
+    la famille échantillonnée ne doit passer. Chaque élimination doit être
+    inventée. Mesuré : 0,00 % de réussite sur 12 000 tirs aléatoires, contre
+    0,16 % en `facile`, sur des terrains qui restent traversables par
+    construction.
+- **Placement par camp.** Le générateur reçoit la composition des équipes.
+  Coéquipiers : 12 unités de distance minimale. Adversaires :
+  `enemySeparationFraction` de la largeur du terrain, 0,45 par défaut — soit
+  près de la moitié du plateau, sans coller tout le monde aux coins. Mesuré :
+  adversaires à 45 unités et plus, coéquipiers autour de 19.
 - `@fw/core-math` : lexeur, parseur à descente récursive, évaluateur et
   vérificateur de continuité. 65 tests, dont des propriétés fast-check qui
   couvrent « le parseur ne lève jamais », l'aller-retour impression/analyse, et
@@ -64,6 +91,11 @@ Versions : [SemVer](https://semver.org/lang/fr/).
 - [ADR 0011](docs/adr/0011-placement-rule-must-cut-both-ways.md) — la règle de
   placement coupe dans les deux sens : rien de trivial ne relie deux joueurs,
   mais quelque chose les relie toujours. **Plafond mesuré : quatre joueurs.**
+- [ADR 0013](docs/adr/0013-shooting-along-both-axes.md) — `x = f(y)` s'obtient
+  par transposition, pas par un second tracer.
+- [ADR 0014](docs/adr/0014-difficulty-and-team-separation.md) — trois
+  difficultés adossées à la connexité monotone, et deux distances de placement
+  selon le camp.
 
 ### Corrigé
 

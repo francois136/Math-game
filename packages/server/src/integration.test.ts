@@ -66,6 +66,7 @@ describe('a whole match, over the protocol, with no socket', () => {
         type: 'shot:fire',
         shot: {
           source: shots[turn % shots.length] ?? '0*x',
+          axis: 'x',
           direction: turn % 2 === 0 ? 'increasing' : 'decreasing',
         },
       });

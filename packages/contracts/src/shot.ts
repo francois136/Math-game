@@ -3,19 +3,31 @@ import { ObstacleIdSchema, PlayerIdSchema } from './ids.js';
 import { Vec2Schema } from './geometry.js';
 import { MAX_SOURCE_LENGTH } from './limits.js';
 
-/** Which way the curve is walked from the player's origin. */
+/** Which way along the axis the curve is walked from the player's origin. */
 export const DirectionSchema = z.enum(['increasing', 'decreasing']);
 export type Direction = z.infer<typeof DirectionSchema>;
 
 /**
- * What a player submits. The curve actually drawn is
+ * Which variable the function is of.
+ *
+ * `x` writes `y = f(x)`, `y` writes `x = f(y)` — the same curve family turned a
+ * quarter turn. Two players stacked one above the other are unreachable by any
+ * function of `x`, and were simply unplayable before this existed (ADR 0013).
+ */
+export const AxisSchema = z.enum(['x', 'y']);
+export type Axis = z.infer<typeof AxisSchema>;
+
+/**
+ * What a player submits. Along `x`, the curve drawn is
  *
  *     y = y₀ + f(x − x₀) − f(0)
  *
- * so it always passes through the player's origin whatever `f(0)` is.
+ * so it always passes through the player's origin whatever `f(0)` is. Along
+ * `y`, swap the roles of the two coordinates and read the same sentence.
  */
 export const ShotRequestSchema = z.object({
   source: z.string().min(1).max(MAX_SOURCE_LENGTH),
+  axis: AxisSchema,
   direction: DirectionSchema,
 });
 export type ShotRequest = z.infer<typeof ShotRequestSchema>;

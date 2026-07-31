@@ -15,14 +15,25 @@ fichier JSON. Dans les deux cas elle passe la même validation.
 
 ## 2. Le tir
 
-Un joueur fournit **une fonction** `f` et **un sens** : vers les `x` croissants
-ou décroissants. La courbe tracée est
+Un joueur fournit **une fonction** `f`, **une variable** — `x` ou `y` — et
+**un sens**. La courbe tracée est
 
 ```
-y = y₀ + f(x − x₀) − f(0)
+y = y₀ + f(x − x₀) − f(0)      le long de x
+x = x₀ + f(y − y₀) − f(0)      le long de y
 ```
 
 autrement dit la fonction du joueur, translatée pour passer par son point.
+
+Le second cas n'est pas un second moteur : le tracer **transpose** le terrain,
+trace comme il l'a toujours fait, et transpose la réponse
+([ADR 0013](adr/0013-shooting-along-both-axes.md)). Sans lui, deux joueurs l'un
+au-dessus de l'autre seraient hors d'atteinte quoi qu'ils écrivent — une courbe
+`y = f(x)` ne repasse jamais par l'abscisse de son auteur.
+
+La lettre que le joueur tape suit la variable : `3*sin(x/2)` le long de `x`,
+`3*sin(y/2)` le long de `y`. Écrire l'autre lettre donne une erreur qui dit
+laquelle était attendue.
 Il n'est jamais nécessaire que `f(0) = 0` : le moteur normalise. Si `f` n'est
 pas définie en `0`, en revanche, le tir est refusé avant d'être tiré
 (`ERR_UNDEFINED_AT_ORIGIN`) — il n'y a pas de point de départ.
@@ -155,13 +166,46 @@ Trois garde-fous, cumulables, tous réglables par salon.
 
 Le générateur rejette toute carte où deux joueurs sont reliés par une courbe
 **triviale** — la droite qui les joint et les arcs à ±5 % de la hauteur de
-carte, c'est-à-dire ce qu'un joueur tape dans ses trente premières secondes.
+carte, dans les deux orientations. C'est ce qu'un joueur tape dans ses trente
+premières secondes, et cette règle ne dépend d'aucun réglage.
 
 Et il rejette tout autant une carte où **aucune** courbe ne les relie. C'est
 l'autre moitié de la règle, et elle n'est pas décorative : boucher toutes les
 paraboles revient à boucher la joignabilité elle-même, et produit des cartes que
 personne ne peut gagner. Mesuré, documenté, corrigé — voir
 [ADR 0011](adr/0011-placement-rule-must-cut-both-ways.md).
+
+### Trois difficultés de terrain
+
+| Difficulté  | Rien de trivial ne passe | Une fonction continue passe | Une parabole passe |
+| ----------- | ------------------------ | --------------------------- | ------------------ |
+| `facile`    | exigé                    | garanti par la parabole     | **exigé**          |
+| `moderee`   | exigé                    | **exigé**                   | indifférent        |
+| `difficile` | exigé                    | **exigé**                   | **interdit**       |
+
+« Une fonction continue passe » se vérifie exactement, pas au jugé : l'espace
+libre entre les deux joueurs doit être **connexe le long d'un balayage
+monotone** — `x` croissants, `x` décroissants, `y` croissants ou `y`
+décroissants. Un chemin dans ce graphe _est_ le graphe d'une fonction continue.
+Voir [ADR 0014](adr/0014-difficulty-and-team-separation.md).
+
+Mesuré sur huit terrains à deux joueurs, 12 000 tirs pris au hasard dans une
+famille large : `facile` 0,16 % de réussite, `moderee` 0,17 %, `difficile`
+**0,00 %** — alors que le terrain reste traversable par construction. En
+difficile, il n'y a rien à trouver en balayant un coefficient : il faut
+inventer.
+
+### Qui se place où
+
+Deux distances minimales, pas une :
+
+- **coéquipiers** : `spawnMinDistanceAllies`, 12 unités par défaut ;
+- **adversaires** : `enemySeparationFraction` de la largeur du terrain, **0,45**
+  par défaut, soit 45 unités sur 100.
+
+0,5 était la proposition initiale ; à quatre ennemis mutuels c'est
+géométriquement impossible sur la zone utile de 88 × 48. 0,45 tient à quatre,
+mesuré.
 
 Après `maxGenerationAttempts` échecs, `ERR_MAP_GENERATION_FAILED` : le
 générateur refuse plutôt que de livrer une carte injouable.

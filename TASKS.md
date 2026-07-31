@@ -94,6 +94,23 @@ cours. Commencer sur une base non fusionnée est la première cause de conflit.
 
 ---
 
+## Entre les phases 5 et 6 — axes de tir et difficultés ☑
+
+Demandé par le superviseur avant l'ouverture de la phase 6.
+
+| #    | Agent     | Tâche                                                                              | Dépend de  | État |
+| ---- | --------- | ---------------------------------------------------------------------------------- | ---------- | ---- |
+| AX-1 | Lead      | Contrats : `Axis` sur la requête de tir, `Difficulty`, distances par camp          | CL-9       | ☑    |
+| AX-2 | Physics   | `transpose.ts` : quart de tour, involution prouvée par propriété (ADR 0013)        | AX-1       | ☑    |
+| AX-3 | Physics   | `connectivity.ts` : connexité monotone par colonnes, quatre balayages (ADR 0014)   | AX-1       | ☑    |
+| AX-4 | Physics   | Générateur : trois difficultés, placement par camp, `validate` à quatre familles   | AX-2, AX-3 | ☑    |
+| AX-5 | Core-Math | `parse(source, variable)` : la lettre de l'axe, et le refus de l'autre             | AX-1       | ☑    |
+| AX-6 | Rules     | L'axe traverse le moteur ; composition des équipes transmise au générateur         | AX-4, AX-5 | ☑    |
+| AX-7 | Client    | Choix de l'axe, prévisualisation le long de la bonne variable, difficulté au salon | AX-6       | ☑    |
+| AX-8 | QA        | Playwright : un tir fonction de `y`, et le choix de difficulté par l'hôte          | AX-7       | ☑    |
+
+---
+
 ## Phase 6 — Équilibrage, bot, rejeux
 
 | #    | Agent   | Tâche                                                                                                                              | Dépend de  | État |
@@ -124,6 +141,17 @@ cours. Commencer sur une base non fusionnée est la première cause de conflit.
 - Le générateur ne produit que des rectangles et des disques. Les polygones
   convexes sont dans les contrats, gérés par les collisions et validés, mais
   seules les cartes JSON écrites à la main peuvent en contenir.
-- Le tracé ne peut pas revenir sur son auteur : `y = f(x)` s'éloigne de `x₀` de
-  façon monotone. `selfImmunityArc` protège donc du départ, et de rien d'autre,
-  et doit rester supérieur au rayon de hitbox.
+- Le tracé ne peut pas revenir sur son auteur : la courbe s'éloigne de son
+  origine de façon monotone dans la variable du tir. `selfImmunityArc` protège
+  donc du départ, et de rien d'autre, et doit rester supérieur au rayon de
+  hitbox.
+- `enemySeparationFraction` plafonne à 0,45 à quatre ennemis mutuels : la zone
+  utile fait 88 × 48 et quatre points deux à deux distants de 50 n'y tiennent
+  pas ([ADR 0014](docs/adr/0014-difficulty-and-team-separation.md)). Un terrain
+  plus haut lèverait la contrainte ; à mesurer avec BA-8.
+- La connexité monotone est discrétisée en 220 colonnes. Un obstacle plus fin
+  qu'une colonne peut lui échapper. Le générateur n'en produit pas d'aussi fin ;
+  une carte JSON écrite à la main le pourrait.
+- En `difficile`, personne n'a encore mesuré combien de tirs un humain met à
+  toucher. Les 0,00 % mesurés sont ceux d'un tireur aléatoire, ce qui est le
+  but ; le nombre qui compte viendra de BA-3.

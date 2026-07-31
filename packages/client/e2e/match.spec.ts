@@ -120,3 +120,53 @@ test('the preview can be switched off and on, and is remembered', async ({ brows
 
   await close();
 });
+
+test('a shot can be a function of y instead of x', async ({ browser }) => {
+  const { active, close } = await startedMatch(browser);
+
+  // The label follows the variable, because `x = f(y)` is not `y = f(x)` with
+  // the letters swapped in the player's head (ADR 0013).
+  await expect(active.getByTestId('composeur')).toContainText('y = f(x)');
+  await active.getByTestId('axe-y').click();
+  await expect(active.getByTestId('composeur')).toContainText('x = f(y)');
+  await expect(active.getByTestId('sens-croissant')).toContainText('y croissants');
+
+  await active.getByTestId('fonction').fill('4*sin(y/5)');
+  await active.getByTestId('verifier').click();
+  await expect(active.getByTestId('verdict')).toContainText('acceptée');
+
+  await active.getByTestId('tirer').click();
+  await expect(active.getByTestId('journal')).toContainText('tire');
+
+  await close();
+});
+
+test('the host chooses how hard the field is', async ({ browser }) => {
+  const hostContext = await browser.newContext();
+  const guestContext = await browser.newContext();
+  const host = await hostContext.newPage();
+  const guest = await guestContext.newPage();
+
+  await identify(host, 'Anne');
+  await host.getByTestId('creer').click();
+  const code = (await host.getByTestId('code-salon').innerText()).trim();
+
+  await identify(guest, 'Bob');
+  await guest.getByTestId('code').fill(code);
+  await guest.getByTestId('rejoindre').click();
+
+  await expect(host.getByTestId('aide-difficulte')).toContainText('parabole');
+  await host.getByTestId('difficulte-difficile').click();
+  await expect(host.getByTestId('aide-difficulte')).toContainText('aucune parabole');
+  // Everyone sees the setting, only the host can move it.
+  await expect(guest.getByTestId('aide-difficulte')).toContainText('aucune parabole');
+  await expect(guest.getByTestId('difficulte-facile')).toBeDisabled();
+
+  await host.getByTestId('pret').click();
+  await guest.getByTestId('pret').click();
+  await host.getByTestId('lancer').click();
+  await expect(host.getByTestId('plateau')).toBeVisible();
+
+  await hostContext.close();
+  await guestContext.close();
+});

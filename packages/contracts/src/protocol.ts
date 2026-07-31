@@ -7,7 +7,7 @@ import {
   TeamIdSchema,
 } from './ids.js';
 import { MatchConfigSchema } from './config.js';
-import { DirectionSchema, ShotRequestSchema } from './shot.js';
+import { AxisSchema, DirectionSchema, ShotRequestSchema } from './shot.js';
 import { MatchEventSchema, MatchViewSchema } from './match.js';
 import { FwErrorSchema } from './errors.js';
 import { MAX_SOURCE_LENGTH } from './limits.js';
@@ -83,6 +83,7 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('shot:validate'),
     source: z.string().min(1).max(MAX_SOURCE_LENGTH),
+    axis: AxisSchema,
     direction: DirectionSchema,
   }),
   z.object({ type: z.literal('shot:fire'), shot: ShotRequestSchema }),

@@ -196,3 +196,31 @@ describe('reported shape', () => {
     expect(parsed.value.source).toBe(source);
   });
 });
+
+describe('which letter is the variable', () => {
+  it('is x by default', () => {
+    expect(at('x^2', 3)).toBe(9);
+    expect(failure('y^2').code).toBe('ERR_UNKNOWN_IDENTIFIER');
+  });
+
+  it('is y when the shot is a function of y', () => {
+    const parsed = parse('y^2', 'y');
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    const outcome = evaluate(parsed.value.ast, 3);
+    expect(outcome.defined && outcome.value).toBe(9);
+  });
+
+  it('refuses the other letter, and says which one it wanted', () => {
+    const wrong = parse('x^2', 'y');
+    expect(wrong.ok).toBe(false);
+    if (wrong.ok) return;
+    expect(wrong.error.code).toBe('ERR_UNKNOWN_IDENTIFIER');
+    expect(wrong.error.message).toContain('la variable est y');
+  });
+
+  it('leaves the functions and constants alone', () => {
+    const parsed = parse('3*sin(y/2) + pi*e', 'y');
+    expect(parsed.ok).toBe(true);
+  });
+});

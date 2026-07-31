@@ -2,12 +2,15 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_MATCH_CONFIG,
   MatchStateSchema,
+  type MapParams,
   type MatchCommand,
   type MatchState,
   type PlayerId,
+  type RulesDeps,
+  type Seed,
 } from '@fw/contracts';
 import { apply, createMatch } from './engine.js';
-import { deps, duellists, noShield, playerId, setup, stateWith } from './testing.js';
+import { deps, duellists, noShield, playerId, setup, stateWith, teamId } from './testing.js';
 
 const TURN = DEFAULT_MATCH_CONFIG.rules.turnDurationMs;
 
@@ -27,6 +30,7 @@ function flatShotAt(state: MatchState): MatchCommand {
     playerId: shooter.id,
     shot: {
       source: '0*x',
+      axis: 'x',
       direction: other.origin.x > shooter.origin.x ? 'increasing' : 'decreasing',
     },
   };
@@ -136,7 +140,7 @@ describe('a refused function costs nothing', () => {
       {
         kind: 'fire',
         playerId: state.turn!.playerId,
-        shot: { source: 'sin(x) + cos(x) + x^2', direction: 'increasing' },
+        shot: { source: 'sin(x) + cos(x) + x^2', axis: 'x', direction: 'increasing' },
       },
       deps(),
       1000,
@@ -152,7 +156,11 @@ describe('turn taking', () => {
     const idle = state.players.find((p) => p.id !== state.turn?.playerId);
     const { state: after, events } = apply(
       state,
-      { kind: 'fire', playerId: idle!.id, shot: { source: 'x', direction: 'increasing' } },
+      {
+        kind: 'fire',
+        playerId: idle!.id,
+        shot: { source: 'x', axis: 'x', direction: 'increasing' },
+      },
       deps(),
       1000,
     );
@@ -271,7 +279,7 @@ describe('eliminations and victory', () => {
       {
         kind: 'fire' as const,
         playerId: ended.players[0]!.id,
-        shot: { source: 'x', direction: 'increasing' as const },
+        shot: { source: 'x', axis: 'x', direction: 'increasing' as const },
       },
       { kind: 'pass' as const, playerId: ended.players[0]!.id },
       { kind: 'timeout' as const, atMs: 10 ** 9 },
@@ -299,7 +307,7 @@ describe('eliminations and victory', () => {
       {
         kind: 'fire',
         playerId: playerId('anne'),
-        shot: { source: '0*x', direction: 'increasing' },
+        shot: { source: '0*x', axis: 'x', direction: 'increasing' },
       },
       deps(),
       1000,
@@ -331,7 +339,7 @@ describe('eliminations and victory', () => {
       {
         kind: 'fire',
         playerId: playerId('anne'),
-        shot: { source: '0*x', direction: 'increasing' },
+        shot: { source: '0*x', axis: 'x', direction: 'increasing' },
       },
       deps(),
       1000,
@@ -355,7 +363,7 @@ describe('eliminations and victory', () => {
       {
         kind: 'fire',
         playerId: playerId('anne'),
-        shot: { source: '0*x', direction: 'increasing' },
+        shot: { source: '0*x', axis: 'x', direction: 'increasing' },
       },
       deps(),
       1000,
@@ -388,5 +396,58 @@ describe('replay', () => {
 
     expect(replayed).toEqual(state);
     expect(replayed.phase).toBe('ended');
+  });
+});
+
+/** Real dependencies, plus a note of what the generator was handed. */
+function watchingTheGenerator(): { deps: RulesDeps; params: () => MapParams | null } {
+  const real = deps();
+  let seen: MapParams | null = null;
+  return {
+    deps: {
+      ...real,
+      maps: {
+        generate: (seedValue: Seed, params: MapParams) => {
+          seen = params;
+          return real.maps.generate(seedValue, params);
+        },
+        validate: (map, params) => real.maps.validate(map, params),
+      },
+    },
+    params: () => seen,
+  };
+}
+
+describe('what the generator is told about the players', () => {
+  it('hands it the sides, so team-mates may stand close and enemies may not', () => {
+    // The rules engine is the only thing that knows who is on whose team, so it
+    // is the only thing that can tell the generator (ADR 0014).
+    const spying = watchingTheGenerator();
+
+    const players = [
+      { id: playerId('anne'), name: 'Anne', teamId: teamId('rouge'), isBot: false },
+      { id: playerId('bob'), name: 'Bob', teamId: teamId('rouge'), isBot: false },
+      { id: playerId('cleo'), name: 'Cléo', teamId: teamId('bleu'), isBot: false },
+      { id: playerId('dan'), name: 'Dan', teamId: teamId('bleu'), isBot: false },
+    ];
+
+    const result = createMatch(
+      setup({ players, map: null, config: noShield({ mode: 'teams' }) }),
+      spying.deps,
+    );
+    expect(result.ok).toBe(true);
+
+    const params = spying.params();
+    expect(params?.spawnCount).toBe(4);
+    // Two sides, in the order the players were seated.
+    expect(params?.spawnTeams).toEqual([0, 0, 1, 1]);
+  });
+
+  it('marks everyone as their own side in a free-for-all', () => {
+    const spying = watchingTheGenerator();
+
+    createMatch(setup({ players: duellists(), map: null }), spying.deps);
+    const params = spying.params();
+    expect(params?.spawnTeams).toEqual([null, null]);
   });
 });
