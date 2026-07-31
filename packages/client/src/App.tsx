@@ -6,6 +6,7 @@ import {
   type Axis,
   type ClientMessage,
   type Direction,
+  type MatchState,
   type Replay,
 } from '@fw/contracts';
 import { connect, type Transport } from './net/connection.js';
@@ -55,6 +56,14 @@ function downloadReplay(replay: Replay | null): void {
   link.download = `functionwars-${replay.matchId}.json`;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+/** Who has still not answered this round. Simultaneous play only. */
+function waitingFor(match: MatchState): readonly { name: string }[] {
+  const answered = new Set(match.pending.map((entry) => entry.playerId));
+  return match.players.filter(
+    (player) => player.alive && player.connected && !answered.has(player.id),
+  );
 }
 
 function remember(key: string, value: string | null): void {
@@ -172,7 +181,13 @@ export function App(): React.JSX.Element {
   }, [state.token, state.lobby, state.playerId]);
 
   const me = state.match?.players.find((player) => player.id === state.playerId) ?? null;
-  const myTurn = state.match?.turn?.playerId === state.playerId;
+  // In simultaneous play the turn belongs to nobody, and what decides whether
+  // you can write is whether you have already answered this round (ADR 0019).
+  const together = state.match?.config.rules.simultaneousResolution === true;
+  const answered = state.match?.pending.some((entry) => entry.playerId === state.playerId) === true;
+  const myTurn = together
+    ? !answered && state.match.players.find((p) => p.id === state.playerId)?.alive === true
+    : state.match?.turn?.playerId === state.playerId;
 
   const preview = useMemo(() => {
     if (state.match === null || me === null) return { kind: 'off' as const };
@@ -236,6 +251,16 @@ export function App(): React.JSX.Element {
               },
             });
           }}
+          onSimultaneous={(simultaneousResolution) => {
+            if (state.lobby === null) return;
+            send({
+              type: 'lobby:configure',
+              config: {
+                ...state.lobby.config,
+                rules: { ...state.lobby.config.rules, simultaneousResolution },
+              },
+            });
+          }}
           onAddBot={(level) => {
             send({ type: 'lobby:add-bot', level });
           }}
@@ -283,10 +308,16 @@ export function App(): React.JSX.Element {
               ? 'Partie terminée.'
               : myTurn
                 ? 'À toi de tirer.'
-                : `Au tour de ${
-                    state.match.players.find((p) => p.id === state.match?.turn?.playerId)?.name ??
-                    '…'
-                  }.`}
+                : together
+                  ? `En attente de ${String(waitingFor(state.match).length)} joueur${
+                      waitingFor(state.match).length > 1 ? 's' : ''
+                    } : ${waitingFor(state.match)
+                      .map((player) => player.name)
+                      .join(', ')}.`
+                  : `Au tour de ${
+                      state.match.players.find((p) => p.id === state.match?.turn?.playerId)?.name ??
+                      '…'
+                    }.`}
           </p>
 
           <ShotComposer

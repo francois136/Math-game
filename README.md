@@ -37,7 +37,12 @@ prennent leur tour sans qu'on leur demande.
 Une partie terminée se télécharge en quelques kilo-octets et se regarde à
 nouveau, tour par tour.
 
-Ce qui manque : la résolution simultanée (phase 6). Voir [`TASKS.md`](TASKS.md).
+L'hôte peut aussi passer la partie en **résolution simultanée** : chacun écrit
+sa fonction, puis tout se résout d'un coup — deux joueurs qui se touchent
+meurent tous les deux.
+
+Ce qui manque : la documentation finale et le guide de déploiement. Voir
+[`TASKS.md`](TASKS.md).
 
 ## Installation
 

@@ -135,8 +135,11 @@ function applyEvent(match: MatchState, event: MatchEvent): MatchState {
   switch (event.kind) {
     case 'turn-started':
       return { ...match, turn: event.turn };
+    case 'shot-submitted':
+      return { ...match, pending: [...match.pending, { playerId: event.playerId, shot: null }] };
     case 'shot-resolved':
-      return { ...match, history: [...match.history, event.record] };
+      // A resolved round empties the board of what was waiting on it.
+      return { ...match, pending: [], history: [...match.history, event.record] };
     case 'player-eliminated':
       return {
         ...match,
@@ -170,6 +173,8 @@ function narrate(event: MatchEvent, match: MatchState): string | null {
       const stop = event.record.trace?.stop.kind;
       return `${nameOf(event.record.playerId)} tire — ${stopLabel(stop)}.`;
     }
+    case 'shot-submitted':
+      return `${nameOf(event.playerId)} a écrit sa fonction.`;
     case 'player-eliminated':
       return `${nameOf(event.playerId)} est éliminé par ${nameOf(event.byPlayerId)}.`;
     case 'shield-expired':

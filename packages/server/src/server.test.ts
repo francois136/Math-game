@@ -439,3 +439,19 @@ describe('replays', () => {
     expect(client.last('error')?.error.code).toBe('ERR_BAD_MESSAGE');
   });
 });
+
+describe('the simultaneous switch', () => {
+  it('is stored and sent back to everyone', () => {
+    const { host, guest } = lobbyOfTwo();
+    const before = lobbyOf(host).config;
+    expect(before.rules.simultaneousResolution).toBe(false);
+
+    host.say({
+      type: 'lobby:configure',
+      config: { ...before, rules: { ...before.rules, simultaneousResolution: true } },
+    });
+
+    expect(lobbyOf(host).config.rules.simultaneousResolution).toBe(true);
+    expect(lobbyOf(guest).config.rules.simultaneousResolution).toBe(true);
+  });
+});

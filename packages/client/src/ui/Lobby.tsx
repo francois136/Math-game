@@ -24,6 +24,7 @@ interface Props {
   readonly selfId: string | null;
   readonly onReady: (ready: boolean) => void;
   readonly onDifficulty: (difficulty: Difficulty) => void;
+  readonly onSimultaneous: (together: boolean) => void;
   readonly onAddBot: (level: BotLevel) => void;
   readonly onRemove: (playerId: PlayerId) => void;
   readonly onStart: () => void;
@@ -34,6 +35,7 @@ export function Lobby({
   selfId,
   onReady,
   onDifficulty,
+  onSimultaneous,
   onAddBot,
   onRemove,
   onStart,
@@ -111,6 +113,24 @@ export function Lobby({
           difficulté à « modérée » pour jouer à autant.
         </p>
       )}
+
+      <label className="bascule">
+        <input
+          type="checkbox"
+          data-testid="bascule-simultane"
+          checked={lobby.config.rules.simultaneousResolution}
+          disabled={!isHost}
+          onChange={(event) => {
+            onSimultaneous(event.target.checked);
+          }}
+        />
+        Tout le monde tire en même temps
+      </label>
+      <p className="aide" data-testid="aide-simultane">
+        {lobby.config.rules.simultaneousResolution
+          ? 'Chacun écrit sa fonction, puis tout se résout d’un coup. Deux joueurs qui se touchent meurent tous les deux.'
+          : 'Chacun son tour. À huit, cela fait sept tours d’attente entre deux actions.'}
+      </p>
 
       {isHost && (
         <div className="sens" role="group" aria-label="Ajouter un bot">

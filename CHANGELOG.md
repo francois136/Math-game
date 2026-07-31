@@ -29,6 +29,34 @@ Versions : [SemVer](https://semver.org/lang/fr/).
     inventée. Mesuré : 0,00 % de réussite sur 12 000 tirs aléatoires, contre
     0,16 % en `facile`, sur des terrains qui restent traversables par
     construction.
+- **La résolution simultanée**, réglable au salon et désactivée par défaut.
+  Chacun écrit sa fonction, puis tout se résout d'un coup — à huit joueurs, cela
+  remplace sept tours d'attente par un.
+
+  Le champ `simultaneousResolution` existait depuis la phase 1 et personne ne le
+  lisait : c'était du code mort, que le brief interdit. La question ouverte
+  depuis le début — _si A tue B et B tue A dans le même round, que se passe-t-il ?_
+  — est tranchée ([ADR 0019](docs/adr/0019-simultaneous-shots-are-all-fired-at-once.md)) :
+  toutes les courbes sont tracées contre le **même état**, celui d'avant le
+  round, et les éliminations s'appliquent ensemble.
+
+  C'est la seule règle qui ne dépende d'aucun ordre, et un test l'affirme :
+  permuter les joueurs ne change pas le résultat. Le double KO existe donc, et
+  la partie nulle cesse d'être théorique. Une courbe qui traverse quelqu'un
+  qu'un autre tir du même round a tué compte aussi — les deux sont partis au
+  même instant.
+
+  `ActiveTurn.playerId` devient nullable : en simultané, ce n'est à personne en
+  particulier, et un champ qui désignerait quand même un joueur ferait griser
+  les mauvaises choses côté client. `shot-submitted` dit qu'un joueur a répondu
+  sans dire ce qu'il a écrit. Le plateau dessine désormais **toutes** les courbes
+  d'un round, pas seulement la dernière.
+
+- **Corrigé, découvert en écrivant le mode simultané** : un rejeu relisait un
+  tour expiré comme un tour volontairement passé. Il reproduisait toutes les
+  éliminations et la mauvaise raison — c'est-à-dire un rejeu qui ne reproduit
+  pas. Un test le fixe désormais, pour l'expiration comme pour la déconnexion.
+
 - **Les rejeux.** Une partie terminée arrive chez tout le monde sous forme de
   document, téléchargeable en un clic, et se regarde à nouveau tour par tour.
 

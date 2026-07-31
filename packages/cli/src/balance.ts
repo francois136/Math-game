@@ -128,8 +128,10 @@ function playOne(seed: string, config: MatchConfig, seats: number, level: BotLev
   let firstKill: number | null = null;
 
   for (let turn = 0; turn < TURN_CEILING && state.phase === 'running'; turn += 1) {
+    // Turn-based only: the campaign measures the default game, and simultaneous
+    // resolution would need every seat to submit before anything happens.
     const active = state.turn?.playerId;
-    if (active === undefined) break;
+    if (active === undefined || active === null) break;
 
     const shot = chooseShot(state, active, level, DEPS);
     const applied = apply(state, { kind: 'fire', playerId: active, shot }, DEPS, turn * 1000);

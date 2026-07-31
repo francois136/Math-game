@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import fc from 'fast-check';
-import { ReplaySchema, type MatchState } from '@fw/contracts';
+import { DEFAULT_MATCH_CONFIG, ReplaySchema, type MatchState } from '@fw/contracts';
 import { apply, createMatch } from './engine.js';
 import { replay, replayFrames, toReplay } from './replay.js';
 import { deps, duellists, noShield, setup } from './testing.js';
@@ -121,6 +121,72 @@ describe('a replay', () => {
     if (result.ok) return;
     expect(result.error.code).toBe('ERR_BAD_REPLAY');
     expect(result.error.message).toContain(`tour ${String(at)}`);
+  });
+
+  it('replays a skipped turn as what actually skipped it', () => {
+    // A turn the clock took must not come back as a turn its player passed:
+    // that reproduces every elimination and records the wrong reason, which is
+    // a replay that does not reproduce.
+    const created = createMatch(
+      setup({ players: duellists(), map: null, seed: 'horloge', config: noShield() }),
+      deps(),
+    );
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+
+    const deadline = created.value.turn?.deadlineAt ?? 0;
+    const timedOut = apply(created.value, { kind: 'timeout', atMs: deadline }, deps(), deadline);
+    expect(timedOut.state.history[0]?.skipped).toBe('timeout');
+
+    const restored = replay(toReplay(timedOut.state), deps());
+    expect(restored.ok).toBe(true);
+    if (!restored.ok) return;
+    expect(restored.value.history[0]?.skipped).toBe('timeout');
+    expect(restored.value).toEqual(timedOut.state);
+  });
+
+  it('replays a round everyone fired in', () => {
+    // Simultaneous play writes several records under one index; replaying feeds
+    // them back one at a time, and the round closes when the last one lands
+    // (ADR 0019).
+    const created = createMatch(
+      setup({
+        players: duellists(),
+        map: null,
+        seed: 'ensemble',
+        config: {
+          rules: {
+            ...DEFAULT_MATCH_CONFIG.rules,
+            shieldTurns: 0,
+            simultaneousResolution: true,
+          },
+        },
+      }),
+      deps(),
+    );
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+
+    let state = created.value;
+    for (const player of state.players) {
+      state = apply(
+        state,
+        {
+          kind: 'fire',
+          playerId: player.id,
+          shot: { source: 'x/4', axis: 'x', direction: 'increasing' },
+        },
+        deps(),
+        1000,
+      ).state;
+    }
+    expect(state.history).toHaveLength(2);
+    expect(new Set(state.history.map((record) => record.index)).size).toBe(1);
+
+    const restored = replay(toReplay(state), deps());
+    expect(restored.ok).toBe(true);
+    if (!restored.ok) return;
+    expect(restored.value).toEqual(state);
   });
 
   it('survives its own JSON round trip', () => {

@@ -279,3 +279,52 @@ test('a finished match can be downloaded and watched again', async ({ browser })
 
   await context.close();
 });
+
+test('everyone fires at once when the host says so', async ({ browser }) => {
+  const hostContext = await browser.newContext();
+  const guestContext = await browser.newContext();
+  const host = await hostContext.newPage();
+  const guest = await guestContext.newPage();
+
+  await identify(host, 'Anne');
+  await host.getByTestId('creer').click();
+  const code = (await host.getByTestId('code-salon').innerText()).trim();
+
+  await identify(guest, 'Bob');
+  await guest.getByTestId('code').fill(code);
+  await guest.getByTestId('rejoindre').click();
+
+  // `click`, not `check`: the box is driven by the server's answer, so its state
+  // does not flip in the same tick — which is the authority model working.
+  await host.getByTestId('bascule-simultane').click();
+  await expect(host.getByTestId('bascule-simultane')).toBeChecked();
+  await expect(guest.getByTestId('aide-simultane')).toContainText('meurent tous les deux');
+  await expect(guest.getByTestId('bascule-simultane')).toBeDisabled();
+
+  await host.getByTestId('pret').click();
+  await guest.getByTestId('pret').click();
+  await host.getByTestId('lancer').click();
+  await expect(host.getByTestId('plateau')).toBeVisible();
+
+  // Nobody is waiting for a turn: both can write at once.
+  await expect(host.getByTestId('tour')).toContainText('À toi de tirer');
+  await expect(guest.getByTestId('tour')).toContainText('À toi de tirer');
+
+  await host.getByTestId('fonction').fill('x/5');
+  await host.getByTestId('tirer').click();
+
+  // Anne has answered and now waits for Bob, by name.
+  await expect(host.getByTestId('tour')).toContainText('En attente de 1 joueur : Bob');
+  await expect(host.getByTestId('fonction')).toBeDisabled();
+  await expect(guest.getByTestId('tour')).toContainText('À toi de tirer');
+
+  await guest.getByTestId('fonction').fill('-x/5');
+  await guest.getByTestId('tirer').click();
+
+  // The round resolved: both shots are in the log, and the next round is open.
+  await expect(host.getByTestId('journal')).toContainText('Anne');
+  await expect(host.getByTestId('journal')).toContainText('Bob');
+
+  await hostContext.close();
+  await guestContext.close();
+});
