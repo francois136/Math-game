@@ -117,7 +117,7 @@ Demandé par le superviseur avant l'ouverture de la phase 6.
 | ---- | ------- | ------------------------------------------------------------------------------------------------------------------------- | ---------- | ---- |
 | BA-1 | Rules   | Bot simple : famille de fonctions paramétrées, tir choisi par échantillonnage (ADR 0016)                                  | RU-8       | ☑    |
 | BA-2 | Rules   | Niveaux de bot, ordonnés par mesure ; aucun ne gagne au premier tour sous les règles par défaut                           | BA-1       | ☑    |
-| BA-3 | QA      | Campagne d'équilibrage : 1 000 parties simulées, statistiques de durée et de premier kill                                 | BA-2       | ☐    |
+| BA-3 | QA      | Campagne d'équilibrage `pnpm run balance` : durée des parties, premier kill, dette du rayon tranchée                      | BA-2       | ☑    |
 | BA-8 | Physics | **Plafond de quatre joueurs levé** : terrain à l'échelle du salon, distances en unités, plafond par difficulté (ADR 0015) | PH-7       | ☑    |
 | BA-4 | Server  | Export de rejeu JSON en fin de partie                                                                                     | SV-10      | ☐    |
 | BA-5 | Client  | Lecture d'un rejeu, pas à pas                                                                                             | BA-4, CL-6 | ☐    |
@@ -142,10 +142,8 @@ Demandé par le superviseur avant l'ouverture de la phase 6.
 - Un coup de bot `redoutable` coûte 220 tracés, soit ~70 ms de serveur bloqué.
   Une table de huit bots redoutables gèle donc un demi-seconde entre deux coups
   humains. Même remède que ci-dessus si cela devient gênant.
-- `playerRadius` peut défaire la règle de placement : une cible plus large que
-  la bande scellée se touche au premier tir plat. Vrai au-delà d'environ 3 sur
-  la carte par défaut. Élargir la bande en proportion casse la génération à
-  quatre joueurs — mesuré, et écarté. À trancher en BA-3.
+- L'équilibrage à plus de deux joueurs n'a pas été mesuré. La campagne sait le
+  faire (`--seats`), personne ne l'a lancée.
 - Le générateur ne produit que des rectangles et des disques. Les polygones
   convexes sont dans les contrats, gérés par les collisions et validés, mais
   seules les cartes JSON écrites à la main peuvent en contenir.

@@ -329,15 +329,50 @@ les modes existants.
   (`simultaneousResolution`), non implémentée. L'ordre de résolution des tirs
   croisés est une décision de design qui reste à prendre, explicitement.
 
-## 7. Ce qui reste ouvert
+## 7. Ce que la campagne d'équilibrage a mesuré
 
-- **La durée d'une partie.** Mesuré : un joueur qui tire au hasard dans une
-  famille raisonnable de fonctions met environ 220 tirs à en éliminer un autre,
-  soit un taux de réussite de l'ordre de 0,5 % par tir. Un joueur humain, qui
-  voit où son tir s'est arrêté et corrige, fait beaucoup mieux — de combien
-  reste à mesurer, et c'est l'objet de la campagne d'équilibrage BA-3. Les
-  leviers connus : rayon de hitbox, distance entre les points d'apparition,
-  densité d'obstacles.
-- Le bot : stratégie et niveaux (phase 6).
+`pnpm run balance` fait jouer des bots les uns contre les autres et imprime ce
+qui s'est passé. Tout vient d'une graine : les nombres ci-dessous se
+reproduisent avec la même commande.
+
+### La durée d'une partie
+
+Duels, règles par défaut (bouclier de deux tours, rayon 1,5), 120 parties par
+case. « Tours » est la médiane des parties allées à leur terme ; une partie non
+finie en 200 tours est comptée nulle.
+
+| terrain   | débutant             | confirmé      | redoutable    |
+| --------- | -------------------- | ------------- | ------------- |
+| facile    | 57 tours (67 finies) | 19 tours (95) | 5 tours (116) |
+| modérée   | 52 tours (68)        | 18 tours (98) | 5 tours (114) |
+| difficile | 50 tours (15)        | 42 tours (37) | 14 tours (67) |
+
+Ce que ça dit :
+
+- **Un joueur qui corrige d'un tir sur l'autre élimine en une vingtaine de
+  tours.** Le chiffre de 220 tirs qui traînait dans ce document décrivait un
+  tireur qui ne regarde pas où sa courbe s'est arrêtée. Regarder change tout,
+  d'un facteur dix.
+- **La difficulté du terrain porte sur le problème, pas sur l'interface.** En
+  `difficile`, un bot débutant ne conclut que 15 parties sur 120 : il n'y a rien
+  à trouver en balayant un coefficient. Le bot le plus fort y met 14 tours, soit
+  presque trois fois ce qu'il met ailleurs, et laisse encore 53 parties sur 120
+  sans vainqueur au bout de deux cents tours.
+- **`facile` et `moderee` se jouent presque pareil** pour un joueur qui cherche.
+  L'écart entre les deux est réel pour qui balaie une famille de paraboles, et
+  s'efface pour qui regarde le terrain — ce qui est cohérent avec ce que chacune
+  garantit.
+
+### Le rayon de hitbox — dette fermée
+
+C'était le point ouvert le plus dangereux, et la mesure est sans appel : au-delà
+de la bande scellée, **tous** les tirs touchent. `playerRadius` est désormais
+borné ([ADR 0017](adr/0017-a-player-fits-inside-the-sealed-band.md)), et une
+configuration hors borne ne démarre plus.
+
+## 8. Ce qui reste ouvert
+
 - Le format des rejeux partageables (phase 6).
 - L'ordre de résolution en mode simultané (voir plus haut).
+- L'équilibrage à plus de deux joueurs n'a pas été mesuré : la campagne le sait
+  faire (`--seats`), personne ne l'a encore lancée.
