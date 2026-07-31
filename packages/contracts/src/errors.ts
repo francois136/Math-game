@@ -36,6 +36,7 @@ export interface FwErrorParams {
   ERR_TOO_MANY_SEATS_FOR_DIFFICULTY: { count: number; max: number; difficulty: string };
   ERR_PLAYER_RADIUS_TOO_LARGE: { radius: number; max: number };
   ERR_MAP_GENERATION_FAILED: { attempts: number };
+  ERR_BAD_REPLAY: { detail: string };
 
   // — Lobby and transport ————————————————————————————————————
   ERR_LOBBY_NOT_FOUND: { code: string };
@@ -90,6 +91,7 @@ export function errorCategory(code: FwErrorCode): 'parse' | 'validation' | 'rule
     case 'ERR_TOO_MANY_SEATS_FOR_DIFFICULTY':
     case 'ERR_PLAYER_RADIUS_TOO_LARGE':
     case 'ERR_MAP_GENERATION_FAILED':
+    case 'ERR_BAD_REPLAY':
       return 'rules';
     default:
       return 'parse';

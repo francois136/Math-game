@@ -79,6 +79,8 @@ const FR: Formatters = {
     `À ${p.difficulty}, un terrain accueille ${String(p.max)} joueurs au plus, et vous êtes ${String(p.count)}. Passez la difficulté du terrain à « modérée » pour jouer à autant.`,
   ERR_PLAYER_RADIUS_TOO_LARGE: (p) =>
     `Des joueurs de rayon ${String(p.radius)} sont trop gros pour ce terrain : au-delà de ${String(p.max)}, ils dépassent des obstacles posés pour les cacher et le premier tir plat gagne. Réduis le rayon, ou agrandis le terrain.`,
+  ERR_BAD_REPLAY: (p) =>
+    `Ce rejeu n'est pas lisible : ${p.detail}. Il vient peut-être d'une autre version du jeu.`,
   ERR_MAP_GENERATION_FAILED: (p) =>
     `Impossible de générer une carte équilibrée en ${String(p.attempts)} tentatives. Change de graine ou baisse les contraintes de placement.`,
 

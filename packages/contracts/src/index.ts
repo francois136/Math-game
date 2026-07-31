@@ -17,5 +17,6 @@ export * from './shot.js';
 export * from './config.js';
 export * from './bot.js';
 export * from './match.js';
+export * from './replay.js';
 export * from './ports.js';
 export * from './protocol.js';

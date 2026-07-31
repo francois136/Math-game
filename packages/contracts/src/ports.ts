@@ -4,6 +4,7 @@ import type { EvalOutcome, ExprNode, ParsedExpression } from './expression.js';
 import type { GameMap, Vec2 } from './geometry.js';
 import type { MapParams, MatchConfig, TraceParams } from './config.js';
 import type { BotLevel } from './bot.js';
+import type { Replay } from './replay.js';
 import type { Axis, Direction, ShotRequest, TraceResult } from './shot.js';
 import type { MatchCommand, MatchEvent, MatchState } from './match.js';
 import type { LobbyCode, MatchId, PlayerId, Seed, SessionToken, TeamId } from './ids.js';
@@ -172,6 +173,19 @@ export interface RulesEnginePort {
     deps: RulesDeps,
     nowMs: number,
   ): { readonly state: MatchState; readonly events: readonly MatchEvent[] };
+}
+
+// — @fw/rules, replays ————————————————————————————————————————
+
+export interface ReplayPort {
+  /** A finished match as a document small enough to send in an email. */
+  toReplay(state: MatchState): Replay;
+  /**
+   * A document back as a match. Fails rather than diverge: a replay whose
+   * shots this build refuses is a replay from another build, and saying so
+   * beats returning a match that quietly went elsewhere (ADR 0018).
+   */
+  replay(document: unknown, deps: RulesDeps): Result<MatchState, FwError>;
 }
 
 // — @fw/bot ——————————————————————————————————————————————————
