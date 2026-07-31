@@ -129,13 +129,18 @@ export const MapParamsSchema = z.object({
    * Set by the rules engine from the lobby; its length matches `spawnCount`.
    */
   spawnTeams: z.array(z.number().int().nonnegative().nullable()).max(MAX_PLAYERS),
-  /** Minimum distance between two seats on the same side. */
+  /** Minimum distance between two seats on the same side, in world units. */
   spawnMinDistanceAllies: z.number().positive(),
   /**
-   * Minimum distance between two seats on opposing sides, as a fraction of the
-   * map's width. See docs/GAME_DESIGN.md for why the default is what it is.
+   * Minimum distance between two seats on opposing sides, in world units.
+   *
+   * In units and not in fractions of the board, because the board grows with
+   * the seat count (`sizedForSeats`): a fraction would silently ask for a
+   * bigger and bigger gap precisely when there are more players to fit. Forty
+   * five units is close to half the width of the two-player board, which is
+   * what it was asked to be. See docs/GAME_DESIGN.md.
    */
-  enemySeparationFraction: z.number().min(0).max(1),
+  spawnMinDistanceEnemies: z.number().positive(),
   /** Distance kept clear around each spawn point. */
   spawnClearance: z.number().positive(),
   /** Hitbox radius of a player. */
@@ -158,12 +163,66 @@ export const DEFAULT_MAP_PARAMS: MapParams = Object.freeze({
   difficulty: 'facile',
   spawnTeams: [null, null],
   spawnMinDistanceAllies: 12,
-  enemySeparationFraction: 0.45,
+  spawnMinDistanceEnemies: 45,
   spawnClearance: 6,
   playerRadius: 1.5,
   sightLineSamples: 9,
   maxGenerationAttempts: 200,
 });
+
+/**
+ * How many seats a difficulty can actually hold.
+ *
+ * `facile` promises that a simple parabola joins every pair of players. There
+ * are n(n−1)/2 pairs, every one of them has to be both sealed against trivial
+ * curves and left open to a parabola, and past five seats the two demands stop
+ * fitting on one field — measured: six seats do generate, but they cost some
+ * three and a half seconds of a blocked server per map, which is not a price a
+ * lobby should pay. `moderee` asks only for monotone connectivity and holds all
+ * eight comfortably (ADR 0015).
+ *
+ * Measured at 16 maps out of 16, on the board `sizedForSeats` gives each count.
+ */
+export function maxSeatsFor(difficulty: Difficulty): number {
+  switch (difficulty) {
+    case 'facile':
+      return 5;
+    case 'difficile':
+      return 7;
+    case 'moderee':
+      return MAX_PLAYERS;
+  }
+}
+
+/**
+ * The board grows with the number of players.
+ *
+ * Eight players on the two-player field stand shoulder to shoulder, and the
+ * generator cannot keep them apart at all. Enlarging it keeps the distance
+ * between enemies at the same *number of units* rather than shrinking it, which
+ * is the point: nobody wanted closer enemies, they wanted more room.
+ *
+ * Obstacle count follows the area, so a bigger field is not an emptier one.
+ * Every other parameter is left alone.
+ */
+export function sizedForSeats(params: MapParams, seats: number): MapParams {
+  const factor = seats <= 4 ? 1 : seats === 5 ? 1.3 : 1.6;
+  if (factor === 1) return params;
+
+  const grow = (value: number): number => Number((value * factor).toFixed(6));
+  const area = factor * factor;
+  return {
+    ...params,
+    bounds: {
+      min: { x: grow(params.bounds.min.x), y: grow(params.bounds.min.y) },
+      max: { x: grow(params.bounds.max.x), y: grow(params.bounds.max.y) },
+    },
+    obstacleCount: {
+      min: Math.round(params.obstacleCount.min * area),
+      max: Math.round(params.obstacleCount.max * area),
+    },
+  };
+}
 
 /** The complete, serialisable description of a match's setup. */
 export const MatchConfigSchema = z.object({

@@ -33,6 +33,7 @@ export interface FwErrorParams {
   ERR_PLAYER_ELIMINATED: Record<string, never>;
   ERR_NOT_ENOUGH_PLAYERS: { count: number; min: number };
   ERR_NOT_ENOUGH_TEAMS: { count: number };
+  ERR_TOO_MANY_SEATS_FOR_DIFFICULTY: { count: number; max: number; difficulty: string };
   ERR_MAP_GENERATION_FAILED: { attempts: number };
 
   // — Lobby and transport ————————————————————————————————————
@@ -85,6 +86,7 @@ export function errorCategory(code: FwErrorCode): 'parse' | 'validation' | 'rule
     case 'ERR_PLAYER_ELIMINATED':
     case 'ERR_NOT_ENOUGH_PLAYERS':
     case 'ERR_NOT_ENOUGH_TEAMS':
+    case 'ERR_TOO_MANY_SEATS_FOR_DIFFICULTY':
     case 'ERR_MAP_GENERATION_FAILED':
       return 'rules';
     default:

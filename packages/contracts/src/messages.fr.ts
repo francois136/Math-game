@@ -75,6 +75,8 @@ const FR: Formatters = {
     p.count <= 1
       ? 'Une partie en équipes a besoin d’au moins deux équipes : répartissez les joueurs avant de lancer.'
       : `Il faut au moins deux équipes, vous en avez ${String(p.count)}.`,
+  ERR_TOO_MANY_SEATS_FOR_DIFFICULTY: (p) =>
+    `À ${p.difficulty}, un terrain accueille ${String(p.max)} joueurs au plus, et vous êtes ${String(p.count)}. Passez la difficulté du terrain à « modérée » pour jouer à autant.`,
   ERR_MAP_GENERATION_FAILED: (p) =>
     `Impossible de générer une carte équilibrée en ${String(p.attempts)} tentatives. Change de graine ou baisse les contraintes de placement.`,
 
