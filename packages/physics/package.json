@@ -1,6 +1,6 @@
 {
   "name": "@fw/physics",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Adaptive curve tracing, collisions, map generation and validation. Pure, no I/O.",
