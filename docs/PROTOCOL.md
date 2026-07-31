@@ -40,6 +40,7 @@ demande ; le serveur ne s'en sert pas comme numéro de séquence de jeu.
 | `lobby:ready`         | membre       | Bascule l'état prêt                                    |
 | `lobby:add-bot`       | hôte         | Ajoute un bot                                          |
 | `lobby:remove-player` | hôte         | Expulse                                                |
+| `replay:load`         | tous         | Fait relire un rejeu par le serveur                    |
 | `match:start`         | hôte         | Démarre. `seed` non nul pour rejouer une partie connue |
 | `shot:validate`       | joueur actif | Parse + continuité seulement. Limité en débit          |
 | `shot:fire`           | joueur actif | Joue le tour                                           |
@@ -55,6 +56,8 @@ demande ; le serveur ne s'en sert pas comme numéro de séquence de jeu.
 | `match:state`     | Démarrage, arrivée en cours de partie, reconnexion. Instantané complet |
 | `match:events`    | Après chaque commande appliquée. Incrémental, numéroté par `seq`       |
 | `shot:validation` | Réponse à `shot:validate`                                              |
+| `match:replay`    | À la fin d'une partie : tout le match, en quelques kilo-octets         |
+| `replay:state`    | Réponse à `replay:load` : la partie reconstruite, tracés compris       |
 | `error`           | Toute demande refusée                                                  |
 | `pong`            | Réponse à `ping`                                                       |
 

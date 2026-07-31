@@ -23,6 +23,7 @@ pourquoi.
 | [0015](0015-the-board-grows-with-the-lobby.md)       | Le terrain grandit avec le salon ; plafond par difficulté            | accepté         |
 | [0016](0016-a-bot-searches-it-does-not-solve.md)     | Un bot cherche par échantillonnage, il ne résout pas                 | accepté         |
 | [0017](0017-a-player-fits-inside-the-sealed-band.md) | Un joueur tient dans la bande scellée : `playerRadius` est borné     | accepté         |
+| [0018](0018-a-replay-stores-what-was-done.md)        | Un rejeu enregistre les décisions, pas les tracés                    | accepté         |
 
 ## Quand écrire une ADR
 

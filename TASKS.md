@@ -119,8 +119,8 @@ Demandé par le superviseur avant l'ouverture de la phase 6.
 | BA-2 | Rules   | Niveaux de bot, ordonnés par mesure ; aucun ne gagne au premier tour sous les règles par défaut                           | BA-1       | ☑    |
 | BA-3 | QA      | Campagne d'équilibrage `pnpm run balance` : durée des parties, premier kill, dette du rayon tranchée                      | BA-2       | ☑    |
 | BA-8 | Physics | **Plafond de quatre joueurs levé** : terrain à l'échelle du salon, distances en unités, plafond par difficulté (ADR 0015) | PH-7       | ☑    |
-| BA-4 | Server  | Export de rejeu JSON en fin de partie                                                                                     | SV-10      | ☐    |
-| BA-5 | Client  | Lecture d'un rejeu, pas à pas                                                                                             | BA-4, CL-6 | ☐    |
+| BA-4 | Server  | Export de rejeu JSON en fin de partie, 68x plus petit que l'état (ADR 0018)                                               | SV-10      | ☑    |
+| BA-5 | Client  | Lecture d'un rejeu, pas à pas, curseur et narration                                                                       | BA-4, CL-6 | ☑    |
 | BA-6 | Rules   | Résolution simultanée : trancher l'ordre des tirs croisés, ADR, puis implémenter                                          | RU-8       | ☐    |
 | BA-7 | Lead    | Documentation finale, captures, guide de déploiement                                                                      | tout       | ☐    |
 
@@ -130,7 +130,6 @@ Demandé par le superviseur avant l'ouverture de la phase 6.
 
 - L'ordre de résolution en mode simultané n'est pas tranché (BA-6). Le champ
   `RuleSet.simultaneousResolution` existe mais aucune implémentation ne le lit.
-- Le format de rejeu partageable n'est pas figé (BA-4).
 - **Le jeu monte à huit joueurs en `moderee`, cinq en `facile`, sept en
   `difficile`** ([ADR 0015](docs/adr/0015-the-board-grows-with-the-lobby.md)).
   Monter `facile` plus haut suppose d'assouplir l'ADR 0011 : sa promesse qu'une

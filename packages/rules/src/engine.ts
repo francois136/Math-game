@@ -205,14 +205,14 @@ export function apply(
           fwError('ERR_NOT_YOUR_TURN', { activePlayerId: state.turn.playerId }),
         );
       }
-      return endTurn(state, skipRecord(state, 'passed'), [], state.players, nowMs);
+      return endTurn(state, skipRecord(state, 'passed', nowMs), [], state.players, nowMs);
 
     case 'timeout':
       if (command.atMs < state.turn.deadlineAt) {
         // The clock fired early. Nothing in the match should move because of it.
         return rejected(state, fwError('ERR_INTERNAL', {}));
       }
-      return endTurn(state, skipRecord(state, 'timeout'), [], state.players, nowMs);
+      return endTurn(state, skipRecord(state, 'timeout', nowMs), [], state.players, nowMs);
   }
 }
 
@@ -229,12 +229,12 @@ function applyConnection(
 
   // A player who drops on their own turn does not hold the match up.
   if (!connected && state.phase === 'running' && state.turn?.playerId === command.playerId) {
-    return endTurn(next, skipRecord(next, 'disconnected'), [], players, nowMs);
+    return endTurn(next, skipRecord(next, 'disconnected', nowMs), [], players, nowMs);
   }
   return { state: next, events: [] };
 }
 
-function skipRecord(state: MatchState, reason: TurnSkipReason): TurnRecord {
+function skipRecord(state: MatchState, reason: TurnSkipReason, nowMs: number): TurnRecord {
   if (state.turn === null) throw new Error('skipRecord outside a turn');
   return {
     index: state.turn.index,
@@ -243,6 +243,7 @@ function skipRecord(state: MatchState, reason: TurnSkipReason): TurnRecord {
     trace: null,
     skipped: reason,
     eliminated: [],
+    atMs: nowMs,
   };
 }
 
@@ -307,6 +308,7 @@ function applyFire(
     trace,
     skipped: null,
     eliminated,
+    atMs: nowMs,
   };
   const events: MatchEvent[] = eliminated.map((victim) => ({
     kind: 'player-eliminated',

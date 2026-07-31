@@ -34,8 +34,10 @@ tracée sur une carte générée à la difficulté choisie par l'hôte, toucher,
 On peut jouer seul : l'hôte ajoute des bots au salon, à trois niveaux, et ils
 prennent leur tour sans qu'on leur demande.
 
-Ce qui manque : l'équilibrage chiffré et les rejeux (phase 6). Voir
-[`TASKS.md`](TASKS.md).
+Une partie terminée se télécharge en quelques kilo-octets et se regarde à
+nouveau, tour par tour.
+
+Ce qui manque : la résolution simultanée (phase 6). Voir [`TASKS.md`](TASKS.md).
 
 ## Installation
 

@@ -16,6 +16,7 @@ import {
   type RulesDeps,
   type ServerFrame,
   type BotPort,
+  type ReplayPort,
   type ServerMessage,
   type SessionToken,
 } from '@fw/contracts';
@@ -76,6 +77,7 @@ const MAX_BOT_TURNS_IN_A_ROW = 256;
 export interface ServerDeps {
   readonly rules: RulesEnginePort;
   readonly bot: BotPort;
+  readonly replays: ReplayPort;
   readonly engine: RulesDeps;
   readonly ids: IdFactoryPort;
   readonly clock: ClockPort;
@@ -264,6 +266,29 @@ export class GameServer {
           this.playBots(lobby);
         });
         return;
+
+      case 'replay:load': {
+        // Replaying costs one full match of tracing, so it is rate limited like
+        // validation is: it is the other way a client can ask the server to
+        // compute on demand.
+        const budget = conn.validates.take(now);
+        if (!budget.allowed) {
+          this.send(session, replyTo, {
+            type: 'error',
+            error: fwError('ERR_RATE_LIMITED', { retryAfterMs: budget.retryAfterMs }),
+          });
+          return;
+        }
+        const rebuilt = this.deps.replays.replay(message.replay, this.deps.engine);
+        this.send(
+          session,
+          replyTo,
+          rebuilt.ok
+            ? { type: 'replay:state', match: rebuilt.value }
+            : { type: 'error', error: rebuilt.error },
+        );
+        return;
+      }
     }
   }
 
@@ -599,6 +624,11 @@ export class GameServer {
       seq: lobby.seq,
       events: [...events],
     });
+
+    // The match is over: hand everyone the whole thing, in a few kilobytes.
+    if (events.some((event) => event.kind === 'match-ended')) {
+      this.broadcast(lobby, { type: 'match:replay', replay: this.deps.replays.toReplay(state) });
+    }
   }
 
   /**

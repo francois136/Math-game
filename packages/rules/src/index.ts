@@ -5,13 +5,18 @@
  * it returns a new one alongside the list of what happened.
  */
 
-import type { RulesEnginePort } from '@fw/contracts';
+import type { ReplayPort, RulesEnginePort } from '@fw/contracts';
 import { apply, createMatch } from './engine.js';
+import { replay, toReplay } from './replay.js';
 
 export { createMatch, apply } from './engine.js';
 export type { Applied } from './engine.js';
 export { targetsFor } from './vulnerability.js';
 export { outcomeOf } from './outcome.js';
+export { toReplay, replay, replayFrames, type ReplayOptions } from './replay.js';
 
 /** The port this package implements. */
 export const rules: RulesEnginePort = { createMatch, apply };
+
+/** The replay half of this package's surface. */
+export const replays: ReplayPort = { toReplay, replay };

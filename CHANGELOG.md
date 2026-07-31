@@ -29,6 +29,30 @@ Versions : [SemVer](https://semver.org/lang/fr/).
     inventée. Mesuré : 0,00 % de réussite sur 12 000 tirs aléatoires, contre
     0,16 % en `facile`, sur des terrains qui restent traversables par
     construction.
+- **Les rejeux.** Une partie terminée arrive chez tout le monde sous forme de
+  document, téléchargeable en un clic, et se regarde à nouveau tour par tour.
+
+  Un rejeu enregistre **ce qui a été fait, pas ce qui a été dessiné**
+  ([ADR 0018](docs/adr/0018-a-replay-stores-what-was-done.md)) : graine,
+  configuration, carte, et une ligne par tour. Les courbes sont retracées à la
+  lecture. Mesuré sur un duel de trente tours : 4 Ko au lieu de 271, soit
+  soixante-huit fois moins, pour la même partie.
+
+  La propriété qui compte, et qui est testée sur quarante parties tirées au
+  hasard : `replay(toReplay(partie))` est égal à la partie, **champ pour champ,
+  tracés compris**. Un enregistrement qui ne reproduit pas est l'enregistrement
+  de rien. Un rejeu que le moteur ne sait plus jouer échoue en nommant le tour
+  fautif, plutôt que de rendre une partie partie ailleurs en silence.
+
+  Relire demande le moteur, que le client n'a pas ([ADR 0006](docs/adr/0006-client-side-curve-preview.md)) :
+  c'est le serveur qui relit (`replay:load`) et renvoie la partie reconstruite.
+  Marcher dedans ensuite est du pur dessin — « qui est debout au tour k » se lit
+  dans l'historique.
+
+  `TurnRecord` gagne `atMs` : les échéances de tour font partie de l'état, et un
+  rejeu joué à une autre horloge reproduirait toutes les éliminations et une
+  échéance différente.
+
 - **`pnpm run balance` : la campagne d'équilibrage.** Des bots jouent les uns
   contre les autres, beaucoup, et le tableau qui sort dit combien de temps dure
   une partie. Tout vient d'une graine : un nombre imprimé se reproduit avec la
