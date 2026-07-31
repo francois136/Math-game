@@ -1,0 +1,122 @@
+import { expect, test, type Browser, type Page } from '@playwright/test';
+
+/**
+ * A match in a browser, against the real server.
+ *
+ * Two pages, one lobby, one shot. Everything below this test is mocked
+ * somewhere; this is the only place where the client, the socket, the server,
+ * the rules and the tracer are all the real ones at the same time.
+ */
+
+async function identify(page: Page, name: string): Promise<void> {
+  await page.goto('/');
+  await page.getByTestId('pseudo').fill(name);
+}
+
+/** A lobby of two, both ready, match started. Returns the page whose turn it is. */
+async function startedMatch(
+  browser: Browser,
+): Promise<{ active: Page; idle: Page; close: () => Promise<void> }> {
+  const hostContext = await browser.newContext();
+  const guestContext = await browser.newContext();
+  const host = await hostContext.newPage();
+  const guest = await guestContext.newPage();
+
+  await identify(host, 'Anne');
+  await host.getByTestId('creer').click();
+  const code = (await host.getByTestId('code-salon').innerText()).trim();
+
+  await identify(guest, 'Bob');
+  await guest.getByTestId('code').fill(code);
+  await guest.getByTestId('rejoindre').click();
+  await expect(host.getByTestId('membres')).toContainText('Bob');
+
+  await host.getByTestId('pret').click();
+  await guest.getByTestId('pret').click();
+  await host.getByTestId('lancer').click();
+  await expect(host.getByTestId('plateau')).toBeVisible();
+
+  const hostIsActive = (await host.getByTestId('tour').innerText()).includes('À toi');
+  return {
+    active: hostIsActive ? host : guest,
+    idle: hostIsActive ? guest : host,
+    close: async () => {
+      await hostContext.close();
+      await guestContext.close();
+    },
+  };
+}
+
+test('two players meet in a lobby and one of them fires', async ({ browser }) => {
+  const hostContext = await browser.newContext();
+  const guestContext = await browser.newContext();
+  const host = await hostContext.newPage();
+  const guest = await guestContext.newPage();
+
+  await identify(host, 'Anne');
+  await host.getByTestId('creer').click();
+  const code = (await host.getByTestId('code-salon').innerText()).trim();
+  expect(code).toHaveLength(6);
+
+  await identify(guest, 'Bob');
+  await guest.getByTestId('code').fill(code);
+  await guest.getByTestId('rejoindre').click();
+  await expect(guest.getByTestId('membres')).toContainText('Anne');
+  await expect(host.getByTestId('membres')).toContainText('Bob');
+
+  await host.getByTestId('pret').click();
+  await guest.getByTestId('pret').click();
+  await host.getByTestId('lancer').click();
+
+  await expect(host.getByTestId('plateau')).toBeVisible();
+  await expect(guest.getByTestId('plateau')).toBeVisible();
+
+  // Exactly one of them is on turn, and the other cannot type.
+  const active = (await host.getByTestId('tour').innerText()).includes('À toi') ? host : guest;
+  const idle = active === host ? guest : host;
+  await expect(idle.getByTestId('fonction')).toBeDisabled();
+
+  await active.getByTestId('fonction').fill('3*sin(x/4)');
+  await active.getByTestId('verifier').click();
+  await expect(active.getByTestId('verdict')).toContainText('acceptée');
+
+  await active.getByTestId('tirer').click();
+  await expect(active.getByTestId('journal')).toContainText('tire');
+  await expect(idle.getByTestId('journal')).toContainText('tire');
+
+  await hostContext.close();
+  await guestContext.close();
+});
+
+test('a discontinuous function is refused, and the turn is still there', async ({ browser }) => {
+  const { active, close } = await startedMatch(browser);
+
+  await active.getByTestId('fonction').fill('{ 0 si x < 5 ; 9 sinon }');
+  await active.getByTestId('verifier').click();
+  await expect(active.getByTestId('verdict')).toContainText('discontinue');
+
+  await active.getByTestId('tirer').click();
+  await expect(active.getByTestId('tour')).toContainText('À toi');
+  await expect(active.getByTestId('fonction')).toBeEnabled();
+
+  await close();
+});
+
+test('the preview can be switched off and on, and is remembered', async ({ browser }) => {
+  const { active, close } = await startedMatch(browser);
+  const toggle = active.getByTestId('bascule-previsualisation');
+
+  await expect(toggle).toBeChecked();
+  await active.getByTestId('fonction').fill('x^2/40');
+  await expect(active.getByTestId('etat-previsualisation')).toContainText('pointillé');
+
+  await toggle.uncheck();
+  await expect(active.getByTestId('etat-previsualisation')).toContainText('désactivée');
+
+  // A reload resumes the seat — the server holds it — and the setting survives.
+  await active.reload();
+  await expect(active.getByTestId('plateau')).toBeVisible();
+  await expect(active.getByTestId('bascule-previsualisation')).not.toBeChecked();
+
+  await close();
+});

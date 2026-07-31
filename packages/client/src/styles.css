@@ -1,0 +1,260 @@
+:root {
+  --fond: #0b111b;
+  --panneau: #141c2b;
+  --trait: #222f45;
+  --texte: #e6ecf5;
+  --doux: #93a3bb;
+  --accent: #6fd3ff;
+  --danger: #ff6b6b;
+  --ok: #7ee787;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--fond);
+  color: var(--texte);
+  font:
+    15px/1.55 system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+}
+
+.application {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+h1 {
+  font-size: 28px;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+h2 {
+  font-size: 19px;
+  margin: 0;
+}
+
+.accueil,
+.salon,
+.composeur {
+  background: var(--panneau);
+  border: 1px solid var(--trait);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.etiquette {
+  color: var(--doux);
+  font-size: 13px;
+}
+
+.saisie {
+  background: #0c121d;
+  border: 1px solid var(--trait);
+  border-radius: 7px;
+  color: var(--texte);
+  padding: 11px 13px;
+  font:
+    15px/1.4 ui-monospace,
+    'SFMono-Regular',
+    Menlo,
+    monospace;
+  width: 100%;
+}
+.saisie:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.saisie.court {
+  width: 9ch;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+.saisie:disabled {
+  opacity: 0.5;
+}
+
+.rangee {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+button {
+  background: #1c2740;
+  border: 1px solid var(--trait);
+  border-radius: 7px;
+  color: var(--texte);
+  padding: 9px 15px;
+  font: inherit;
+  cursor: pointer;
+}
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+button.primaire {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #06121b;
+  font-weight: 600;
+}
+button.actif {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.sens {
+  display: flex;
+  gap: 6px;
+}
+
+.bascule {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: auto;
+  color: var(--doux);
+  font-size: 14px;
+  cursor: pointer;
+}
+.bascule input {
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+}
+
+.plateau {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--trait);
+  border-radius: 10px;
+  background: #0e1420;
+  display: block;
+}
+
+.aide {
+  color: var(--doux);
+  font-size: 13px;
+  margin: 0;
+}
+
+.verdict {
+  margin: 0;
+  font-size: 14px;
+  padding: 9px 12px;
+  border-radius: 7px;
+}
+.verdict.ok {
+  color: var(--ok);
+  background: rgb(126 231 135 / 9%);
+}
+.verdict.refus {
+  color: var(--danger);
+  background: rgb(255 107 107 / 9%);
+}
+
+.tour {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.alerte {
+  margin: 0;
+  background: rgb(255 107 107 / 12%);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+.alerte button {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 19px;
+  padding: 0 6px;
+  line-height: 1;
+}
+
+.membres {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.membres li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+  background: #0c121d;
+  border: 1px solid var(--trait);
+  border-radius: 7px;
+}
+.membres li.absent {
+  opacity: 0.55;
+}
+.nom {
+  font-weight: 600;
+}
+.badge {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--doux);
+  border: 1px solid var(--trait);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+.badge.pret {
+  color: var(--ok);
+  border-color: rgb(126 231 135 / 45%);
+}
+
+.journal {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: var(--doux);
+  font-size: 14px;
+  max-height: 190px;
+  overflow-y: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

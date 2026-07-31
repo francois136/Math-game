@@ -30,6 +30,19 @@ Versions : [SemVer](https://semver.org/lang/fr/).
   limitation de débit par seau à jetons. 25 tests, dont une partie entière
   jouée entre deux clients simulés et 8 000 trames aléatoires sans une seule
   exception.
+- `@fw/client` : l'interface. Canvas 2D, écran d'accueil, salon avec code
+  d'invitation, plateau, journal de partie, et saisie de fonction avec
+  **prévisualisation activable ou désactivable** — un interrupteur, retenu
+  d'un rechargement à l'autre, et qui ne calcule rien quand il est éteint.
+  18 tests unitaires sur les deux seuls endroits où le client raisonne
+  (`preview.ts`, `state.ts`) et trois tests Playwright dans un vrai navigateur
+  contre un vrai serveur.
+- Reprise de siège après un rechargement de page : le client garde son jeton et
+  se rebranche sur la partie en cours. Le serveur savait le faire depuis la
+  phase 4, le client ne s'en servait pas.
+- La CI vérifie que `packages/client/package.json` ne déclare ni `@fw/physics`
+  ni `@fw/rules`. L'[ADR 0006](docs/adr/0006-client-side-curve-preview.md)
+  n'est plus une promesse écrite, c'est un échec de build.
 - `IdFactoryPort.lobbyCode()` et `.sessionToken()`.
 - `ERR_NOT_ENOUGH_TEAMS` : une partie en équipes à une seule équipe est refusée
   au lieu de se terminer d'elle-même au premier tour.
