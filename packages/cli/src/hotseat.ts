@@ -7,6 +7,7 @@ import {
   PlayerIdSchema,
   SeedSchema,
   TeamIdSchema,
+  type Axis,
   type Direction,
   type MatchEvent,
   type MatchSetupPlayer,
@@ -164,6 +165,7 @@ async function main(): Promise<number> {
 
       let source: string;
       let direction: Direction;
+      let axis: Axis = 'x';
 
       if (options.script.length > 0 && scripted >= options.script.length) {
         stdout.write('\nScript épuisé, la partie n’est pas finie.\n');
@@ -177,11 +179,17 @@ async function main(): Promise<number> {
         const target = others[0];
         direction =
           target !== undefined && target.origin.x < active.origin.x ? 'decreasing' : 'increasing';
-        stdout.write(`f(x) = ${source}  [${direction === 'increasing' ? '→' : '←'}]\n`);
+        stdout.write(`f(${axis}) = ${source}  [${direction === 'increasing' ? '→' : '←'}]\n`);
       } else {
         // A closed stdin — a pipe that ran dry, a CI run — resolves to nothing.
         // Leaving the loop is the only sane answer; waiting forever is not.
-        const typed = await rl.question('f(x) = ').catch(() => null);
+        const variable = await rl.question('variable [x/y] (entrée = x) : ').catch(() => null);
+        if (variable === null) break;
+        axis = variable.trim().toLowerCase() === 'y' ? 'y' : 'x';
+
+        const typed = await rl
+          .question(axis === 'x' ? 'y = f(x) = ' : 'x = f(y) = ')
+          .catch(() => null);
         source = (typed ?? '').trim();
         if (typed === null || source === '' || source === 'quit') break;
         const answer = (await rl.question('sens [→/←] (entrée = →) : ').catch(() => '')).trim();
@@ -191,7 +199,7 @@ async function main(): Promise<number> {
 
       const { state: next, events } = apply(
         state,
-        { kind: 'fire', playerId: active.id, shot: { source, direction } },
+        { kind: 'fire', playerId: active.id, shot: { source, axis, direction } },
         DEPS,
         state.turn.deadlineAt - state.config.rules.turnDurationMs + 1,
       );

@@ -16,6 +16,7 @@ import {
   type ParsedExpression,
   type PiecewiseBranch,
   type Result,
+  type Axis,
 } from '@fw/contracts';
 import { isKeyword, tokenize, type Token } from './lexer.js';
 import { containsVariable, evaluate } from './evaluate.js';
@@ -75,7 +76,10 @@ class Parser {
   private lastPrimaryIsLiteral = false;
   private readonly breakpoints = new Set<number>();
 
-  constructor(private readonly tokens: Token[]) {}
+  constructor(
+    private readonly tokens: Token[],
+    private readonly variable: Axis,
+  ) {}
 
   private peek(offset = 0): Token {
     const token = this.tokens[this.pos + offset];
@@ -229,7 +233,7 @@ class Parser {
       const name = token.text;
       if (isKeyword(name)) this.fail(token);
 
-      if (name === 'x') {
+      if (name === this.variable) {
         this.advance();
         this.count();
         return { kind: 'variable' };
@@ -269,7 +273,13 @@ class Parser {
           }),
         );
       }
-      throw new ParseAbort(fwError('ERR_UNKNOWN_IDENTIFIER', { name, position: token.start }));
+      throw new ParseAbort(
+        fwError('ERR_UNKNOWN_IDENTIFIER', {
+          name,
+          position: token.start,
+          variable: this.variable,
+        }),
+      );
     }
 
     this.fail(token);
@@ -421,12 +431,12 @@ function measureGuardDepth(guard: GuardNode, depth: number): number {
  * Source → AST. Never throws, never executes anything, and enforces every
  * static limit before handing back a tree (ADR 0002).
  */
-export function parse(source: string): Result<ParsedExpression, FwError> {
+export function parse(source: string, variable: Axis = 'x'): Result<ParsedExpression, FwError> {
   const tokens = tokenize(source);
   if (!Array.isArray(tokens)) return err(tokens);
 
   try {
-    const parser = new Parser(tokens);
+    const parser = new Parser(tokens, variable);
     const { ast, nodes, breakpoints } = parser.parseProgram();
     const depth = measureDepth(ast);
     if (depth > MAX_AST_DEPTH) {

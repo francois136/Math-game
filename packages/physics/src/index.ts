@@ -10,7 +10,16 @@ import { trace } from './tracer.js';
 import { generate, validate } from './mapgen.js';
 
 export { trace } from './tracer.js';
-export { generate, validate, GENERATOR_VERSION } from './mapgen.js';
+export { generate, validate, requiredSeparation, GENERATOR_VERSION } from './mapgen.js';
+export { reachableByAnySweep, reachableBySweep, ALL_SWEEPS } from './connectivity.js';
+export type { Sweep } from './connectivity.js';
+export {
+  transposePoint,
+  transposeBox,
+  transposeObstacle,
+  transposeMap,
+  transposeResult,
+} from './transpose.js';
 export {
   segmentAabb,
   segmentDisc,

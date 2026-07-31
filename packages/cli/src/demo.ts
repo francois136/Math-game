@@ -6,6 +6,7 @@ import {
   PlayerIdSchema,
   SeedSchema,
   fmt,
+  type Axis,
   type Direction,
   type TraceTarget,
   type Vec2,
@@ -26,6 +27,7 @@ interface Options {
   seed: string;
   source: string;
   from: number;
+  axis: Axis;
   direction: Direction;
   spawns: number;
 }
@@ -37,10 +39,12 @@ function parseOptions(args: string[]): Options {
   };
 
   const direction = read('--dir', 'increasing');
+  const axis = read('--axis', 'x');
   return {
     seed: read('--seed', 'alpha'),
     source: read('--f', '2*sin(x/4)'),
     from: Number(read('--from', '0')),
+    axis: axis === 'y' ? 'y' : 'x',
     direction: direction === 'decreasing' ? 'decreasing' : 'increasing',
     spawns: Number(read('--spawns', '4')),
   };
@@ -68,10 +72,12 @@ function main(): number {
   stdout.write(`\nCarte « ${options.seed} » · ${String(map.value.obstacles.length)} obstacles · `);
   stdout.write(`${String(spawns.length)} joueurs\n`);
   stdout.write(`Tireur en (${fmt(shooter.x)} ; ${fmt(shooter.y)}), sens `);
-  stdout.write(`${options.direction === 'increasing' ? 'croissant' : 'décroissant'}\n`);
+  stdout.write(
+    `${options.axis} ${options.direction === 'increasing' ? 'croissant' : 'décroissant'}\n`,
+  );
   stdout.write(`Fonction : ${options.source}\n\n`);
 
-  const parsed = parse(options.source);
+  const parsed = parse(options.source, options.axis);
   if (!parsed.ok) {
     stdout.write(`REFUSÉE — ${parsed.error.message}\n`);
     stdout.write('Le tour n’est pas consommé : corrige et retire.\n\n');
@@ -79,7 +85,10 @@ function main(): number {
     return 0;
   }
 
-  const span = map.value.bounds.max.x - map.value.bounds.min.x;
+  const span =
+    options.axis === 'x'
+      ? map.value.bounds.max.x - map.value.bounds.min.x
+      : map.value.bounds.max.y - map.value.bounds.min.y;
   const interval =
     options.direction === 'increasing' ? { from: 0, to: span } : { from: -span, to: 0 };
 
@@ -106,6 +115,7 @@ function main(): number {
     expression: parsed.value,
     evaluator,
     origin: shooter,
+    axis: options.axis,
     direction: options.direction,
     map: map.value,
     targets,

@@ -7,6 +7,7 @@ import {
   segmentDisc,
   segmentObstacle,
 } from './geometry.js';
+import { transposeMap, transposePoint, transposeResult } from './transpose.js';
 
 /**
  * Walk the curve until it stops.
@@ -15,10 +16,31 @@ import {
  * translated to pass through their own point, whatever `f(0)` happens to be.
  * `u` below is that `x − x₀`, walked from 0 in the chosen direction.
  *
+ * A shot along `y` is the same walk on a transposed world (ADR 0013): turn the
+ * field a quarter turn, trace, turn the answer back. There is no second tracer.
+ *
  * Pure and deterministic. Same input, same polyline, to the last coordinate —
  * which is what makes a replay a replay and a contested elimination checkable.
  */
 export function trace(input: TraceInput): TraceResult {
+  if (input.axis === 'y') {
+    return transposeResult(
+      traceAlongX({
+        ...input,
+        axis: 'x',
+        origin: transposePoint(input.origin),
+        map: transposeMap(input.map),
+        targets: input.targets.map((target) => ({
+          ...target,
+          center: transposePoint(target.center),
+        })),
+      }),
+    );
+  }
+  return traceAlongX(input);
+}
+
+function traceAlongX(input: TraceInput): TraceResult {
   const { expression, evaluator, origin, params, pierce } = input;
   const sign = input.direction === 'increasing' ? 1 : -1;
 

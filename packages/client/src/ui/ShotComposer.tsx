@@ -1,15 +1,17 @@
 import { useId } from 'react';
-import type { Direction } from '@fw/contracts';
+import type { Axis, Direction } from '@fw/contracts';
 import type { Preview } from '../preview.js';
 
 interface Props {
   readonly source: string;
+  readonly axis: Axis;
   readonly direction: Direction;
   readonly preview: Preview;
   readonly previewEnabled: boolean;
   readonly disabled: boolean;
   readonly validation: { ok: boolean; message: string | null } | null;
   readonly onSource: (source: string) => void;
+  readonly onAxis: (axis: Axis) => void;
   readonly onDirection: (direction: Direction) => void;
   readonly onPreviewEnabled: (enabled: boolean) => void;
   readonly onValidate: () => void;
@@ -22,9 +24,9 @@ export function ShotComposer(props: Props): React.JSX.Element {
   const toggleId = useId();
 
   return (
-    <section className="composeur">
+    <section className="composeur" data-testid="composeur">
       <label className="etiquette" htmlFor={fieldId}>
-        f(x) =
+        {props.axis === 'x' ? 'y = f(x)' : 'x = f(y)'}
       </label>
       <input
         id={fieldId}
@@ -41,6 +43,33 @@ export function ShotComposer(props: Props): React.JSX.Element {
       />
 
       <div className="rangee">
+        <div className="sens" role="group" aria-label="Variable de la fonction">
+          <button
+            type="button"
+            data-testid="axe-x"
+            className={props.axis === 'x' ? 'actif' : ''}
+            disabled={props.disabled}
+            onClick={() => {
+              props.onAxis('x');
+            }}
+          >
+            fonction de x
+          </button>
+          <button
+            type="button"
+            data-testid="axe-y"
+            className={props.axis === 'y' ? 'actif' : ''}
+            disabled={props.disabled}
+            onClick={() => {
+              props.onAxis('y');
+            }}
+          >
+            fonction de y
+          </button>
+        </div>
+      </div>
+
+      <div className="rangee">
         <div className="sens" role="group" aria-label="Sens du tir">
           <button
             type="button"
@@ -51,7 +80,7 @@ export function ShotComposer(props: Props): React.JSX.Element {
               props.onDirection('increasing');
             }}
           >
-            → x croissants
+            {props.axis === 'x' ? '→ x croissants' : '↑ y croissants'}
           </button>
           <button
             type="button"
@@ -62,7 +91,7 @@ export function ShotComposer(props: Props): React.JSX.Element {
               props.onDirection('decreasing');
             }}
           >
-            ← x décroissants
+            {props.axis === 'x' ? '← x décroissants' : '↓ y décroissants'}
           </button>
         </div>
 

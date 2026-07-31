@@ -26,6 +26,7 @@ const arbitraryCommand = (state: MatchState): fc.Arbitrary<MatchCommand> => {
       playerId: fc.constantFrom(...ids),
       shot: fc.record({
         source: fc.constantFrom(...SOURCES),
+        axis: fc.constantFrom('x' as const, 'y' as const),
         direction: fc.constantFrom('increasing' as const, 'decreasing' as const),
       }),
     }),
@@ -104,7 +105,7 @@ describe('invariants of a match under any sequence of commands', () => {
           {
             kind: 'fire',
             playerId: state.turn!.playerId,
-            shot: { source: 'x', direction: 'increasing' },
+            shot: { source: 'x', axis: 'x', direction: 'increasing' },
           },
           deps(),
           1000,
@@ -130,7 +131,11 @@ describe('invariants of a match under any sequence of commands', () => {
                 {
                   kind: 'fire',
                   playerId: state.turn.playerId,
-                  shot: { source, direction: step % 2 === 0 ? 'increasing' : 'decreasing' },
+                  shot: {
+                    source,
+                    axis: 'x',
+                    direction: step % 2 === 0 ? 'increasing' : 'decreasing',
+                  },
                 },
                 deps(),
                 step * 1000,

@@ -7,7 +7,9 @@ erreur qui lui explique quoi corriger.
 
 ## Ports implémentés
 
-- `ExpressionParserPort` — `parse(source) → Result<ParsedExpression, FwError>`
+- `ExpressionParserPort` — `parse(source, variable?) → Result<ParsedExpression, FwError>`.
+  `variable` vaut `x` ou `y` et suit l'axe du tir : un joueur à qui l'on annonce
+  « x = f(y) » doit pouvoir écrire `y` (ADR 0013).
 - `EvaluatorPort` — `evaluate(ast, x) → EvalOutcome`
 - `ContinuityCheckerPort` — `check(expr, interval, params) → Result<void, FwError>`
 

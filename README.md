@@ -4,9 +4,9 @@ Un jeu au tour par tour, de deux à quatre joueurs, où l'on s'élimine en
 traçant des courbes.
 
 À son tour, un joueur écrit une fonction — `x^2`, `3*sin(x/2)`, `ln(x+4)`, ou
-une fonction par morceaux — et choisit un sens de propagation. La courbe part de
-son point, contourne ou percute les obstacles, et si elle traverse un adversaire,
-celui-ci disparaît. Dernier survivant gagné.
+une fonction par morceaux — choisit l'axe (`y = f(x)` ou `x = f(y)`) et un sens
+de propagation. La courbe part de son point, contourne ou percute les obstacles,
+et si elle traverse un adversaire, celui-ci disparaît. Dernier survivant gagné.
 
 La seule règle imposée aux fonctions est qu'elles soient **continues** là où
 elles sont tracées. Tout le reste — asymptotes, sorties de domaine, bords de
@@ -26,9 +26,10 @@ pnpm run hotseat                         # ou une partie à deux sur un clavier
 pnpm run demo --seed bravo --f "x^2/40"  # ou un seul tir, pour regarder le tracé
 ```
 
-Ce qui marche : écrire une fonction, se la voir refuser en français sans perdre
-son tour si elle est discontinue ou mal formée, la voir tracée sur une carte
-générée, toucher, être éliminé, gagner.
+Ce qui marche : écrire une fonction de `x` ou de `y`, se la voir refuser en
+français sans perdre son tour si elle est discontinue ou mal formée, la voir
+tracée sur une carte générée à la difficulté choisie par l'hôte, toucher, être
+éliminé, gagner.
 
 Ce qui manque : l'équilibrage, le bot et les rejeux (phase 6). Voir
 [`TASKS.md`](TASKS.md).

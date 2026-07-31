@@ -21,6 +21,7 @@ function shoot(
     expression,
     evaluator,
     origin: ORIGIN,
+    axis: 'x',
     direction: 'increasing',
     map: emptyMap(),
     targets: [],

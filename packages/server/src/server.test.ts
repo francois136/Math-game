@@ -196,7 +196,10 @@ describe('playing', () => {
     shooter?.forget();
     guest.forget();
     host.forget();
-    shooter?.say({ type: 'shot:fire', shot: { source: 'x/4', direction: 'increasing' } });
+    shooter?.say({
+      type: 'shot:fire',
+      shot: { source: 'x/4', axis: 'x', direction: 'increasing' },
+    });
 
     for (const client of [host, guest]) {
       const batch = client.last('match:events');
@@ -212,7 +215,7 @@ describe('playing', () => {
     const active = host.last('match:state')?.match.turn?.playerId;
     const idle = [host, guest].find((c) => c.last('welcome')?.playerId !== active);
 
-    idle?.say({ type: 'shot:fire', shot: { source: 'x', direction: 'increasing' } });
+    idle?.say({ type: 'shot:fire', shot: { source: 'x', axis: 'x', direction: 'increasing' } });
     const events = idle?.last('match:events')?.events ?? [];
     expect(events.some((e) => e.kind === 'command-rejected')).toBe(true);
   });
@@ -225,13 +228,14 @@ describe('playing', () => {
     host.say({
       type: 'shot:validate',
       source: '{ 0 si x < 5 ; 9 sinon }',
+      axis: 'x',
       direction: 'increasing',
     });
     const answer = host.last('shot:validation');
     expect(answer?.ok).toBe(false);
     expect(answer?.error?.code).toBe('ERR_DISCONTINUITY');
 
-    host.say({ type: 'shot:validate', source: 'x^2/40', direction: 'increasing' });
+    host.say({ type: 'shot:validate', source: 'x^2/40', axis: 'x', direction: 'increasing' });
     expect(host.last('shot:validation')?.ok).toBe(true);
     expect(host.last('match:state')?.match).toEqual(before);
   });

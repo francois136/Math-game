@@ -236,7 +236,7 @@ export class GameServer {
         return;
 
       case 'shot:validate':
-        this.onValidate(session, conn, replyTo, message.source, message.direction, now);
+        this.onValidate(session, conn, replyTo, message, now);
         return;
 
       case 'shot:fire':
@@ -497,8 +497,7 @@ export class GameServer {
     session: Session,
     conn: Conn,
     replyTo: number,
-    source: string,
-    direction: 'increasing' | 'decreasing',
+    message: Extract<ClientMessage, { type: 'shot:validate' }>,
     now: number,
   ): void {
     const budget = conn.validates.take(now);
@@ -514,7 +513,7 @@ export class GameServer {
     const match = lobby?.match ?? null;
     const shooter = match?.players.find((player) => player.id === session.playerId);
 
-    const parsed = this.deps.engine.parser.parse(source);
+    const parsed = this.deps.engine.parser.parse(message.source, message.axis);
     if (!parsed.ok) {
       this.send(session, replyTo, { type: 'shot:validation', ok: false, error: parsed.error });
       return;
@@ -524,10 +523,15 @@ export class GameServer {
       return;
     }
 
+    // The interval is in the shot's own variable, as the rules engine computes
+    // it for a real shot (ADR 0013).
+    const low = message.axis === 'x' ? match.map.bounds.min.x : match.map.bounds.min.y;
+    const high = message.axis === 'x' ? match.map.bounds.max.x : match.map.bounds.max.y;
+    const start = message.axis === 'x' ? shooter.origin.x : shooter.origin.y;
     const span =
-      direction === 'increasing'
-        ? { from: 0, to: match.map.bounds.max.x - shooter.origin.x }
-        : { from: match.map.bounds.min.x - shooter.origin.x, to: 0 };
+      message.direction === 'increasing'
+        ? { from: 0, to: high - start }
+        : { from: low - start, to: 0 };
     const continuity = this.deps.engine.continuity.check(parsed.value, span, match.config.trace);
 
     this.send(session, replyTo, {
