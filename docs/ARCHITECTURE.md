@@ -44,7 +44,9 @@ dépendent pas les uns des autres — ils ne se parlent qu'à travers les ports 
 
 Le client importe `core-math` : c'est la seule arête inhabituelle du graphe,
 et elle sert uniquement à dessiner la prévisualisation
-([ADR 0006](adr/0006-client-side-curve-preview.md)).
+([ADR 0006](adr/0006-client-side-curve-preview.md)). Ce n'est pas qu'une
+promesse : un travail de CI relit `packages/client/package.json` et échoue si
+`@fw/physics` ou `@fw/rules` y apparaissent.
 
 ## Le trajet d'un tir
 

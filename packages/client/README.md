@@ -2,40 +2,44 @@
 
 **Propriétaire : agent Client.** React + Canvas 2D, servi par Vite.
 
+```bash
+pnpm run serve      # dans un terminal : le serveur
+pnpm --filter @fw/client dev   # dans un autre : l'interface, http://localhost:5173
+```
+
 Le client **affiche**. Il ne décide de rien : ni qui meurt, ni où la courbe
 s'arrête, ni de qui est le tour.
 
-## Ce qu'il faut construire
+## La prévisualisation, et sa frontière
 
-1. **Rendu Canvas** : carte, obstacles, joueurs, boucliers, courbe animée le
-   long de la polyligne reçue, marqueur au point d'arrêt.
-2. **Saisie de fonction** avec prévisualisation en direct, y compris la syntaxe
-   par morceaux. Erreurs affichées sous le champ, en français, telles que le
-   serveur les a formulées.
-3. **Salon** : création, code d'invitation, équipes, réglages, prêt, démarrage.
-4. **Mode hot-seat et bot** : la même interface, branchée sur `@fw/rules` en
-   local au lieu du réseau. C'est ce qui permet de jouer sans serveur.
+Le champ de saisie dessine la courbe pendant qu'on la tape, en pointillé bleu.
+Elle **ignore les obstacles et les joueurs** : elle montre la forme de la
+courbe, pas où le tir s'arrêtera. Le tracé qui compte arrive du serveur, en
+trait plein orange, avec un point rouge là où il s'est arrêté. Les deux styles
+sont volontairement dissemblables ; un joueur ne doit jamais se demander lequel
+il regarde.
 
-## La seule chose que le client calcule
+Un interrupteur permet de **l'activer ou de la désactiver**, et le réglage
+survit à un rechargement de page. Désactivée, elle n'est pas calculée du tout —
+c'est la différence qui compte sur une machine lente.
 
-La **prévisualisation** de la courbe : le client importe `@fw/core-math` pour
-évaluer `f` et dessiner le trait avant le tir. Cette courbe ignore les
-obstacles, les joueurs et les collisions — elle ne dit pas où le tir
-s'arrêtera. Le tracé qui compte vient du serveur (ADR 0006).
+La garantie est mécanique, pas déclarative : `package.json` ne déclare ni
+`@fw/physics` ni `@fw/rules`, et la CI échoue si cela change
+([ADR 0006](../../docs/adr/0006-client-side-curve-preview.md)).
 
-C'est la seule dérogation, et elle est bornée : le client n'importe jamais
-`@fw/physics` ni `@fw/rules` en mode réseau.
+## Ce qu'il reste à faire
 
-## Interdits
+- **Le hot-seat dans le navigateur** (CL-7) n'est pas fait. Il demanderait
+  d'importer `@fw/rules` et `@fw/physics` côté client, donc de renoncer à la
+  vérification ci-dessus. `pnpm run hotseat` couvre le besoin en terminal ; la
+  question se retranchera si le besoin revient.
+- Écrans de configuration de salon (équipes, réglages) : seuls « prêt » et
+  « lancer » existent.
 
-- Recalculer, deviner ou anticiper une élimination.
-- Afficher un état que le serveur n'a pas confirmé.
-- Coder en dur une constante d'équilibrage : elles viennent de `@fw/contracts`.
+## Tests
 
-## Critères d'acceptation
-
-- Playwright : une partie hot-seat complète, du salon à l'écran de victoire.
-- Playwright : saisie d'une fonction discontinue, message d'erreur affiché,
-  tour non consommé.
-- Capture d'écran comparée : courbe, obstacles et hitboxes alignés sur les
-  coordonnées monde.
+- `preview.ts` et `state.ts` sont purs et testés par Vitest : ce sont les deux
+  seuls endroits où le client raisonne.
+- `pnpm --filter @fw/client run e2e` lance Playwright contre un vrai serveur et
+  un vrai navigateur : deux joueurs, un salon, un tir, une fonction refusée, et
+  l'interrupteur de prévisualisation.

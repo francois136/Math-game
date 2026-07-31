@@ -7,8 +7,19 @@
     "declaration": false,
     "declarationMap": false,
     "allowJs": true,
+    "jsx": "react-jsx",
+    "verbatimModuleSyntax": false,
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "types": ["node"]
   },
-  "include": ["*.ts", "*.js", "packages/*/src/**/*.ts"],
+  "include": [
+    "*.ts",
+    "*.js",
+    "packages/*/src/**/*.ts",
+    "packages/*/src/**/*.tsx",
+    "packages/client/vite.config.ts",
+    "packages/client/playwright.config.ts",
+    "packages/client/e2e/**/*.ts"
+  ],
   "exclude": ["**/dist/**", "**/node_modules/**"]
 }

@@ -80,17 +80,17 @@ cours. Commencer sur une base non fusionnée est la première cause de conflit.
 
 ## Phase 5 — Client graphique
 
-| #    | Agent  | Tâche                                                                           | Dépend de        | État |
-| ---- | ------ | ------------------------------------------------------------------------------- | ---------------- | ---- |
-| CL-1 | Client | Vite, React, structure d'application, transport WebSocket typé                  | CT-2             | ☐    |
-| CL-2 | Client | Rendu Canvas : carte, obstacles, joueurs, boucliers, coordonnées monde          | CL-1             | ☐    |
-| CL-3 | Client | Champ de saisie de fonction, syntaxe par morceaux, erreurs sous le champ        | CL-1, CM-4       | ☐    |
-| CL-4 | Client | Prévisualisation locale de la courbe (ADR 0006), style distinct du tir confirmé | CL-2, CL-3, CM-5 | ☐    |
-| CL-5 | Client | Écrans de salon : création, code, équipes, réglages, prêt                       | CL-1, SV-4       | ☐    |
-| CL-6 | Client | Animation d'un tir le long de la polyligne, marqueur d'arrêt, élimination       | CL-2, SV-5       | ☐    |
-| CL-7 | Client | Mode hot-seat branché sur `@fw/rules` en local                                  | CL-4, RU-8       | ☐    |
-| CL-8 | Client | Playwright : partie hot-seat complète, fonction refusée, tour non consommé      | CL-7             | ☐    |
-| CL-9 | Client | Accessibilité au clavier, contrastes, réduction des animations                  | CL-6             | ☐    |
+| #    | Agent  | Tâche                                                                                                                                                                                                         | Dépend de        | État |
+| ---- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ---- |
+| CL-1 | Client | Vite, React, structure d'application, transport WebSocket typé                                                                                                                                                | CT-2             | ☐    |
+| CL-2 | Client | Rendu Canvas : carte, obstacles, joueurs, boucliers, coordonnées monde                                                                                                                                        | CL-1             | ☐    |
+| CL-3 | Client | Champ de saisie de fonction, syntaxe par morceaux, erreurs sous le champ                                                                                                                                      | CL-1, CM-4       | ☐    |
+| CL-4 | Client | Prévisualisation locale de la courbe (ADR 0006), style distinct du tir confirmé                                                                                                                               | CL-2, CL-3, CM-5 | ☐    |
+| CL-5 | Client | Écrans de salon : création, code, équipes, réglages, prêt                                                                                                                                                     | CL-1, SV-4       | ☐    |
+| CL-6 | Client | Animation d'un tir le long de la polyligne, marqueur d'arrêt, élimination                                                                                                                                     | CL-2, SV-5       | ☐    |
+| CL-7 | Client | Hot-seat dans le navigateur — **écarté** : demanderait d'importer `@fw/rules` et `@fw/physics` côté client, donc de renoncer à la vérification de l'ADR 0006. `pnpm run hotseat` couvre le besoin en terminal | CL-4, RU-8       | ✗    |
+| CL-8 | Client | Playwright : partie hot-seat complète, fonction refusée, tour non consommé                                                                                                                                    | CL-7             | ☐    |
+| CL-9 | Client | Accessibilité au clavier, contrastes, réduction des animations                                                                                                                                                | CL-6             | ☐    |
 
 ---
 

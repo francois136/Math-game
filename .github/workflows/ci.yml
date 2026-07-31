@@ -60,3 +60,51 @@ jobs:
             exit 1
           fi
           echo "Clean."
+
+      # ADR 0006 promises the client cannot decide who dies: it depends on the
+      # contracts and the evaluator, and on nothing that resolves a shot. A
+      # promise in a document is a hope; here it is a build failure.
+      - name: The client cannot reach the rules or the physics
+        run: |
+          if node -e "
+            const pkg = require('./packages/client/package.json');
+            const deps = Object.keys(pkg.dependencies ?? {});
+            const forbidden = deps.filter((d) => d === '@fw/physics' || d === '@fw/rules');
+            if (forbidden.length) { console.error(forbidden.join(', ')); process.exit(1); }
+          "; then
+            echo "Clean."
+          else
+            echo "::error::The client declares a package that decides outcomes. See docs/adr/0006."
+            exit 1
+          fi
+
+  e2e:
+    name: end to end, in a real browser
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm run typecheck
+
+      - name: Install Chromium
+        run: pnpm --filter @fw/client exec playwright install --with-deps chromium
+
+      - name: Play a match in a browser
+        run: pnpm --filter @fw/client run e2e
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: packages/client/playwright-report/
+          retention-days: 7
