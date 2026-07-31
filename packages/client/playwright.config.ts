@@ -31,11 +31,15 @@ export default defineConfig({
       timeout: 30_000,
     },
     {
-      command: 'pnpm exec vite --port 5173 --strictPort',
+      // The host is pinned on purpose: left to itself Vite binds `localhost`,
+      // which resolves to ::1 on a machine with IPv6 while the health check
+      // below asks 127.0.0.1 — and the wait times out with the server running
+      // perfectly well two addresses away.
+      command: 'pnpm exec vite --port 5173 --strictPort --host 127.0.0.1',
       env: { VITE_FW_SERVER: 'ws://127.0.0.1:8788' },
       url: 'http://127.0.0.1:5173',
       reuseExistingServer: false,
-      timeout: 60_000,
+      timeout: 120_000,
     },
   ],
 });
