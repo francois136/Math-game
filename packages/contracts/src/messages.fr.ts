@@ -38,7 +38,7 @@ const FR: Formatters = {
   ERR_SYNTAX: (p) =>
     `Syntaxe incorrecte au caractère ${String(p.position + 1)} : « ${p.found} » n’est pas attendu ici.`,
   ERR_UNKNOWN_IDENTIFIER: (p) =>
-    `« ${p.name} » est inconnu (caractère ${String(p.position + 1)}). La seule variable est x ; les seules constantes sont pi et e.`,
+    `« ${p.name} » est inconnu (caractère ${String(p.position + 1)}). Ici la variable est ${p.variable} ; les seules constantes sont pi et e.`,
   ERR_UNKNOWN_FUNCTION: (p) =>
     p.suggestion === null
       ? `La fonction « ${p.name} » n’existe pas (caractère ${String(p.position + 1)}).`

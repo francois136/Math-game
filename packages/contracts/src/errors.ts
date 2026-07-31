@@ -14,7 +14,7 @@ export interface FwErrorParams {
   ERR_EMPTY_INPUT: Record<string, never>;
   ERR_INPUT_TOO_LONG: { length: number; max: number };
   ERR_SYNTAX: { position: number; found: string };
-  ERR_UNKNOWN_IDENTIFIER: { name: string; position: number };
+  ERR_UNKNOWN_IDENTIFIER: { name: string; position: number; variable: string };
   ERR_UNKNOWN_FUNCTION: { name: string; position: number; suggestion: string | null };
   ERR_ARITY: { name: string; expected: number; received: number };
   ERR_AST_TOO_DEEP: { depth: number; max: number };

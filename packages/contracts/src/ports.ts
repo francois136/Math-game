@@ -3,7 +3,7 @@ import type { FwError } from './errors.js';
 import type { EvalOutcome, ExprNode, ParsedExpression } from './expression.js';
 import type { GameMap, Vec2 } from './geometry.js';
 import type { MapParams, MatchConfig, TraceParams } from './config.js';
-import type { Direction, TraceResult } from './shot.js';
+import type { Axis, Direction, TraceResult } from './shot.js';
 import type { MatchCommand, MatchEvent, MatchState } from './match.js';
 import type { LobbyCode, MatchId, PlayerId, Seed, SessionToken, TeamId } from './ids.js';
 
@@ -21,8 +21,14 @@ import type { LobbyCode, MatchId, PlayerId, Seed, SessionToken, TeamId } from '.
 // — @fw/core-math ————————————————————————————————————————————
 
 export interface ExpressionParserPort {
-  /** Source → AST, enforcing every static limit. Never throws, never executes. */
-  parse(source: string): Result<ParsedExpression, FwError>;
+  /**
+   * Source → AST, enforcing every static limit. Never throws, never executes.
+   *
+   * `variable` is the letter the player writes, which follows the axis of the
+   * shot: `x` for `y = f(x)`, `y` for `x = f(y)`. A player told they are
+   * writing a function of `y` should be able to write `y` (ADR 0013).
+   */
+  parse(source: string, variable?: Axis): Result<ParsedExpression, FwError>;
 }
 
 export interface EvaluatorPort {
@@ -77,6 +83,8 @@ export interface TraceInput {
   readonly evaluator: EvaluatorPort;
   /** The shooter's position; the curve is translated to pass through it. */
   readonly origin: Vec2;
+  /** `x` for `y = f(x)`, `y` for `x = f(y)` (ADR 0013). */
+  readonly axis: Axis;
   readonly direction: Direction;
   readonly map: GameMap;
   readonly targets: readonly TraceTarget[];
@@ -93,16 +101,24 @@ export interface TracerPort {
   trace(input: TraceInput): TraceResult;
 }
 
+export type SpawnPair = readonly [number, number];
+
+/**
+ * What each pair of seats can and cannot do to each other.
+ *
+ * Three separate families, because the difficulty settings need to ask three
+ * different questions of the same map (ADR 0014).
+ */
 export interface MapValidation {
   readonly ok: boolean;
-  /** Pairs a trivial curve connects with nothing in the way — a free first kill. */
-  readonly exposedPairs: readonly (readonly [number, number])[];
-  /**
-   * Pairs no curve of the wide family can connect at all — a match nobody can
-   * win. Sealing the trivial curves too hard produces these, so the generator
-   * checks for both (ADR 0011).
-   */
-  readonly unreachablePairs: readonly (readonly [number, number])[];
+  /** A trivial curve connects them with nothing in the way — a free first kill. */
+  readonly exposedPairs: readonly SpawnPair[];
+  /** No continuous function joins them at all — a match nobody can win. */
+  readonly unreachablePairs: readonly SpawnPair[];
+  /** A parabola of the wide family gets through: the shot is findable by trying. */
+  readonly parabolaPairs: readonly SpawnPair[];
+  /** Seats standing closer than their side allows. */
+  readonly tooClosePairs: readonly SpawnPair[];
   readonly coverage: number;
 }
 
