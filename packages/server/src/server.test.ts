@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_MATCH_CONFIG,
   LobbyCodeSchema,
+  MAX_PLAYERS,
   PROTOCOL_VERSION,
   type LobbyState,
 } from '@fw/contracts';
@@ -96,14 +97,16 @@ describe('lobbies', () => {
   it('fills up at the seat limit but still takes spectators', () => {
     const { game, code } = lobbyOfTwo();
     const seats: Client[] = [];
-    for (let i = 0; i < 3; i += 1) {
+    // Two are already seated, MAX_PLAYERS is the ceiling: one more than the
+    // free seats, and the last one is turned away.
+    for (let i = 0; i < MAX_PLAYERS - 1; i += 1) {
       const client = new Client(game);
       client.hello(`Joueur ${String(i)}`);
       client.say({ type: 'lobby:join', code, asSpectator: false });
       seats.push(client);
     }
-    // Four seats maximum: the third extra player is turned away.
     expect(seats.at(-1)?.last('error')?.error.code).toBe('ERR_LOBBY_FULL');
+    expect(seats.at(-2)?.last('error')).toBeUndefined();
 
     const watcher = new Client(game);
     watcher.hello('Curieux');

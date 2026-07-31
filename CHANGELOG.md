@@ -29,6 +29,26 @@ Versions : [SemVer](https://semver.org/lang/fr/).
     inventée. Mesuré : 0,00 % de réussite sur 12 000 tirs aléatoires, contre
     0,16 % en `facile`, sur des terrains qui restent traversables par
     construction.
+- **Le jeu monte à huit joueurs** ([ADR 0015](docs/adr/0015-the-board-grows-with-the-lobby.md)).
+  Le plafond de quatre n'était pas la limite qu'on croyait. Deux corrections :
+  - **Le terrain grandit avec le salon** (`sizedForSeats`) : ×1 jusqu'à quatre
+    joueurs, ×1,3 à cinq, ×1,6 au-delà, le nombre d'obstacles suivant l'aire.
+  - **La distance entre ennemis s'exprime en unités**, plus en fraction de la
+    largeur : `spawnMinDistanceEnemies`, 45 par défaut — exactement ce que
+    valait 0,45 sur le terrain à deux joueurs. Une fraction exigeait un écart
+    plus grand au moment précis où il y avait plus de monde à loger, ce qui est
+    la raison pour laquelle « agrandir le terrain n'y change rien » était vrai.
+  - **Le plafond dépend maintenant de la difficulté** (`maxSeatsFor`) : cinq en
+    `facile`, sept en `difficile`, huit en `moderee`. C'est `facile` qui plafonne,
+    parce qu'elle promet une parabole entre **chaque** paire et que les paires
+    croissent comme le carré de l'effectif. Le refus est précoce et lisible :
+    `ERR_TOO_MANY_SEATS_FOR_DIFFICULTY` avant même d'appeler le générateur, et le
+    salon désactive « Lancer » en disant quelle difficulté choisir.
+
+  Mesuré, 16 cartes par case : cinq joueurs 16/16 aux trois difficultés ;
+  huit joueurs en `moderee` 16/16 à 326 ms. Sur l'ancien terrain, aux mêmes
+  45 unités, aucun effectif au-delà de quatre ne produisait une seule carte.
+
 - **Placement par camp.** Le générateur reçoit la composition des équipes.
   Coéquipiers : 12 unités de distance minimale. Adversaires :
   `enemySeparationFraction` de la largeur du terrain, 0,45 par défaut — soit
@@ -126,9 +146,9 @@ Versions : [SemVer](https://semver.org/lang/fr/).
   qui corrige d'un tir sur l'autre fait mieux, de combien reste à mesurer
   (tâche BA-3).
 
-- Le générateur ne produit pas de carte à six joueurs ou plus. Il refuse
-  proprement plutôt que d'en livrer une injouable ; `DEFAULT_RULES.maxPlayers`
-  vaut toujours 8. Voir BA-8 dans `TASKS.md`.
+- Générer une carte à sept sièges en `difficile` coûte 1,2 s, et le serveur est
+  mono-thread : c'est du gel pour tous les salons, une fois par partie. Mesuré
+  et accepté pour l'instant ; à sortir du fil principal si cela gêne.
 
 ## [0.1.0] — 2026-07-30
 

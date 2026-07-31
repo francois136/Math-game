@@ -1,4 +1,4 @@
-import type { Difficulty, LobbyState } from '@fw/contracts';
+import { maxSeatsFor, type Difficulty, type LobbyState } from '@fw/contracts';
 
 const DIFFICULTIES: readonly { value: Difficulty; label: string; hint: string }[] = [
   { value: 'facile', label: 'Facile', hint: 'Une parabole relie toujours deux joueurs.' },
@@ -22,6 +22,11 @@ export function Lobby({ lobby, selfId, onReady, onDifficulty, onStart }: Props):
   const me = lobby.members.find((member) => member.playerId === selfId);
   const isHost = lobby.hostId === selfId;
   const seated = lobby.members.filter((member) => !member.isSpectator);
+
+  // A field of a given difficulty only holds so many seats. Say so here, in the
+  // lobby, rather than let the host press Lancer and read an error (ADR 0015).
+  const ceiling = maxSeatsFor(lobby.config.map.difficulty);
+  const tooMany = seated.length > ceiling;
 
   return (
     <section className="salon">
@@ -67,6 +72,12 @@ export function Lobby({ lobby, selfId, onReady, onDifficulty, onStart }: Props):
       <p className="aide" data-testid="aide-difficulte">
         {DIFFICULTIES.find((option) => option.value === lobby.config.map.difficulty)?.hint ?? ''}
       </p>
+      {tooMany && (
+        <p className="verdict refus" data-testid="trop-de-joueurs">
+          Ce terrain accueille {ceiling} joueurs au plus, et vous êtes {seated.length}. Passez la
+          difficulté à « modérée » pour jouer à autant.
+        </p>
+      )}
 
       <div className="rangee">
         {me !== undefined && !me.isSpectator && (
@@ -81,7 +92,13 @@ export function Lobby({ lobby, selfId, onReady, onDifficulty, onStart }: Props):
           </button>
         )}
         {isHost && (
-          <button type="button" data-testid="lancer" className="primaire" onClick={onStart}>
+          <button
+            type="button"
+            data-testid="lancer"
+            className="primaire"
+            disabled={tooMany}
+            onClick={onStart}
+          >
             Lancer la partie ({seated.length} joueur{seated.length > 1 ? 's' : ''})
           </button>
         )}

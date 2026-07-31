@@ -2,7 +2,9 @@ import {
   createRng,
   err,
   fwError,
+  maxSeatsFor,
   ok,
+  sizedForSeats,
   type ContinuityInterval,
   type FwError,
   type MatchCommand,
@@ -40,6 +42,21 @@ export function createMatch(setup: MatchSetup, deps: RulesDeps): Result<MatchSta
     return err(fwError('ERR_NOT_ENOUGH_PLAYERS', { count, min: rules.minPlayers }));
   }
 
+  // A field of a given difficulty can only hold so many seats, and finding out
+  // at generation time means a full lobby watching an error it cannot read
+  // (ADR 0015). Only for a generated map: a hand-authored one has already
+  // solved the problem by existing.
+  const seatCeiling = maxSeatsFor(mapParams.difficulty);
+  if (setup.map === null && count > seatCeiling) {
+    return err(
+      fwError('ERR_TOO_MANY_SEATS_FOR_DIFFICULTY', {
+        count,
+        max: seatCeiling,
+        difficulty: mapParams.difficulty,
+      }),
+    );
+  }
+
   if (rules.mode === 'teams') {
     // Every living player on one side means that side has won — so a match that
     // starts with a single side ends on its first resolution, before anyone has
@@ -63,7 +80,10 @@ export function createMatch(setup: MatchSetup, deps: RulesDeps): Result<MatchSta
   const map =
     setup.map !== null
       ? ok(setup.map)
-      : deps.maps.generate(setup.seed, { ...mapParams, spawnCount: count, spawnTeams });
+      : deps.maps.generate(
+          setup.seed,
+          sizedForSeats({ ...mapParams, spawnCount: count, spawnTeams }, count),
+        );
   if (!map.ok) return map;
 
   if (map.value.spawns.length < count) {

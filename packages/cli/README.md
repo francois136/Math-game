@@ -6,7 +6,7 @@ Deux entrées : une partie complète, et une démonstration d'un seul tir.
 
 ## `pnpm run hotseat`
 
-Une vraie partie, deux à quatre joueurs sur un clavier. Toute la logique vient
+Une vraie partie, deux à huit joueurs sur un clavier. Toute la logique vient
 de `@fw/rules` : ce paquet demande une fonction et affiche ce qu'on lui répond.
 C'est ce que permet un noyau pur — le hot-seat ne coûte pas une seconde
 implémentation.

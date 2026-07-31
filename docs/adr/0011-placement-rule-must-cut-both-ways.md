@@ -1,6 +1,8 @@
 # 0011 — La règle de placement doit couper dans les deux sens
 
-- **Statut** : accepté
+- **Statut** : amendé par [0014](0014-difficulty-and-team-separation.md) puis
+  [0015](0015-the-board-grows-with-the-lobby.md) — la règle « une parabole passe »
+  n'est plus exigée qu'en `facile`
 - **Date** : 2026-07-30
 
 ## Contexte

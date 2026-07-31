@@ -5,6 +5,7 @@ import {
   SeedSchema,
   TeamIdSchema,
   type GameMap,
+  type MapParams,
   type MatchConfig,
   type MatchSetup,
   type MatchSetupPlayer,
@@ -81,6 +82,11 @@ export function duellists(): MatchSetupPlayer[] {
 /** Rules with the opening shield removed, for tests about hitting things. */
 export function noShield(overrides: Partial<MatchConfig['rules']> = {}): Partial<MatchConfig> {
   return { rules: { ...DEFAULT_MATCH_CONFIG.rules, shieldTurns: 0, ...overrides } };
+}
+
+/** A config that only says how hard the generated field should be. */
+export function onField(difficulty: MapParams['difficulty']): Partial<MatchConfig> {
+  return { ...noShield(), map: { ...DEFAULT_MATCH_CONFIG.map, difficulty } };
 }
 
 /**

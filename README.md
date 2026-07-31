@@ -1,6 +1,6 @@
 # FunctionWars
 
-Un jeu au tour par tour, de deux à quatre joueurs, où l'on s'élimine en
+Un jeu au tour par tour, de deux à huit joueurs, où l'on s'élimine en
 traçant des courbes.
 
 À son tour, un joueur écrit une fonction — `x^2`, `3*sin(x/2)`, `ln(x+4)`, ou

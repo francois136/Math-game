@@ -170,3 +170,34 @@ test('the host chooses how hard the field is', async ({ browser }) => {
   await hostContext.close();
   await guestContext.close();
 });
+
+test('an easy field turns away a lobby too big for it', async ({ browser }) => {
+  // Six players on `facile` cannot be laid out, and the lobby says so before
+  // anyone presses Lancer (ADR 0015).
+  const contexts = await Promise.all(Array.from({ length: 6 }, () => browser.newContext()));
+  const pages = await Promise.all(contexts.map((context) => context.newPage()));
+  const [host, ...guests] = pages;
+  if (host === undefined) throw new Error('no host');
+
+  await identify(host, 'Anne');
+  await host.getByTestId('creer').click();
+  const code = (await host.getByTestId('code-salon').innerText()).trim();
+
+  for (const [index, guest] of guests.entries()) {
+    await identify(guest, `Joueur ${String(index)}`);
+    await guest.getByTestId('code').fill(code);
+    await guest.getByTestId('rejoindre').click();
+  }
+  await expect(host.getByTestId('membres')).toContainText('Joueur 4');
+
+  // Six seated, and `facile` is the default: the warning is up and Lancer is out.
+  await expect(host.getByTestId('trop-de-joueurs')).toContainText('5 joueurs au plus');
+  await expect(host.getByTestId('lancer')).toBeDisabled();
+
+  // Moving the field to moderate is exactly what the message asks for.
+  await host.getByTestId('difficulte-moderee').click();
+  await expect(host.getByTestId('trop-de-joueurs')).toHaveCount(0);
+  await expect(host.getByTestId('lancer')).toBeEnabled();
+
+  await Promise.all(contexts.map((context) => context.close()));
+});

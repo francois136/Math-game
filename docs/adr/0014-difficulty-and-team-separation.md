@@ -1,6 +1,7 @@
 # 0014 — Trois difficultés de terrain, et une distance par camp
 
-- **Statut** : accepté
+- **Statut** : amendé par [0015](0015-the-board-grows-with-the-lobby.md) — la
+  distance entre ennemis passe d'une fraction du terrain à un nombre d'unités
 - **Date** : 2026-07-31
 - **Décide** : le superviseur
 

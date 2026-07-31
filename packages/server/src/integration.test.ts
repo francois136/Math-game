@@ -20,7 +20,9 @@ const GENEROUS: MatchConfig = {
     bounds: { min: { x: -25, y: -15 }, max: { x: 25, y: 15 } },
     playerRadius: 5,
     spawnClearance: 7,
-    spawnMinDistance: 14,
+    // The enemy distance is in world units, so a smaller board needs a smaller
+    // one: the default 45 does not fit across a field 50 wide (ADR 0015).
+    spawnMinDistanceEnemies: 18,
     obstacleCount: { min: 2, max: 4 },
   },
 };
