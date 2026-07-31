@@ -54,6 +54,9 @@ importers:
 
   packages/cli:
     dependencies:
+      '@fw/bot':
+        specifier: workspace:*
+        version: link:../bot
       '@fw/contracts':
         specifier: workspace:*
         version: link:../contracts

@@ -17,7 +17,10 @@ const GENEROUS: MatchConfig = {
   rules: { ...DEFAULT_MATCH_CONFIG.rules, shieldTurns: 0 },
   map: {
     ...DEFAULT_MATCH_CONFIG.map,
-    bounds: { min: { x: -25, y: -15 }, max: { x: 25, y: 15 } },
+    // Tall on purpose: `maxPlayerRadiusFor` ties how wide a player may be to the
+    // height of the field, and this test wants players wide enough to hit
+    // (ADR 0017). A hundred units of height buys the radius of 5 below.
+    bounds: { min: { x: -25, y: -50 }, max: { x: 25, y: 50 } },
     playerRadius: 5,
     spawnClearance: 7,
     // The enemy distance is in world units, so a smaller board needs a smaller

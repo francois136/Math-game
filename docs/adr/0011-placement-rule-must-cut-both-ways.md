@@ -3,6 +3,8 @@
 - **Statut** : amendé par [0014](0014-difficulty-and-team-separation.md) puis
   [0015](0015-the-board-grows-with-the-lobby.md) — la règle « une parabole passe »
   n'est plus exigée qu'en `facile`
+  ; [0017](0017-a-player-fits-inside-the-sealed-band.md) borne `playerRadius`
+  pour que la bande scellée cache vraiment un joueur
 - **Date** : 2026-07-30
 
 ## Contexte

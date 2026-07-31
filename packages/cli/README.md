@@ -2,7 +2,8 @@
 
 **Propriétaire : agent QA/DevOps.**
 
-Deux entrées : une partie complète, et une démonstration d'un seul tir.
+Trois entrées : une partie complète, une démonstration d'un seul tir, et la
+campagne d'équilibrage.
 
 ## `pnpm run hotseat`
 
@@ -34,3 +35,36 @@ en ASCII avec la raison d'arrêt.
 
 Ce qu'elle **ne** fait pas : gérer des tours ni une victoire — c'est le travail
 du hot-seat ci-dessus, et de `@fw/rules` derrière lui.
+
+## `pnpm run balance`
+
+La campagne d'équilibrage : des bots jouent les uns contre les autres, beaucoup,
+et le tableau qui sort dit combien de temps dure une partie.
+
+```bash
+pnpm run balance                                          # 60 parties par case
+pnpm run balance -- --matches 200 --shield 2
+pnpm run balance -- --difficulty moderee --level confirme --radius 3
+pnpm run balance -- --seats 4 --difficulty moderee
+```
+
+Tout vient d'une graine : un nombre imprimé ici se reproduit avec la même
+commande. C'est ce qui permet de répondre « mesuré » plutôt que « il me
+semble ».
+
+| Option         | Défaut     | Rôle                                |
+| -------------- | ---------- | ----------------------------------- |
+| `--matches`    | 60         | parties par case du tableau         |
+| `--difficulty` | les trois  | terrains à mesurer, séparés par `,` |
+| `--level`      | les trois  | niveaux de bot                      |
+| `--seats`      | 2          | joueurs par partie                  |
+| `--shield`     | 0          | tours de bouclier au départ         |
+| `--radius`     | 1,5        | rayon de hitbox                     |
+| `--seed`       | `campagne` | préfixe des graines                 |
+
+Une partie non finie en 200 tours est comptée comme nulle. Une carte que le
+générateur ne sait pas construire n'est comptée nulle part : ce n'est pas un
+résultat d'équilibrage.
+
+Ce que la campagne a déjà tranché est dans
+[`docs/GAME_DESIGN.md`](../../docs/GAME_DESIGN.md) §7.

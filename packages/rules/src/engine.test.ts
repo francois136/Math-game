@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_MATCH_CONFIG,
   MatchStateSchema,
+  maxPlayerRadiusFor,
   type MapParams,
   type MatchCommand,
   type MatchState,
@@ -484,6 +485,42 @@ describe('what the generator is told about the players', () => {
     expect(width(params)).toBeGreaterThan(width(DEFAULT_MATCH_CONFIG.map));
     // …and the enemy distance is untouched: it is the room that changed.
     expect(params.spawnMinDistanceEnemies).toBe(DEFAULT_MATCH_CONFIG.map.spawnMinDistanceEnemies);
+  });
+});
+
+describe('a player too wide for the field', () => {
+  it('is refused, because the first flat shot would win', () => {
+    // The generator seals a band 5% of the field's height. A hitbox wider than
+    // that band sticks out of it. Measured: radius 3 plays normally on the
+    // default field — 2% of shots land — and radius 3.5 makes every shot land
+    // and every match end on turn one (ADR 0017).
+    const ceiling = maxPlayerRadiusFor(DEFAULT_MATCH_CONFIG.map.bounds);
+    expect(ceiling).toBe(3);
+
+    const tooBig = createMatch(
+      setup({
+        players: duellists(),
+        map: null,
+        config: { map: { ...DEFAULT_MATCH_CONFIG.map, playerRadius: ceiling + 0.5 } },
+      }),
+      deps(),
+    );
+    expect(tooBig.ok).toBe(false);
+    if (tooBig.ok) return;
+    expect(tooBig.error.code).toBe('ERR_PLAYER_RADIUS_TOO_LARGE');
+    expect(tooBig.error.message).toContain('trop gros');
+
+    // Right at the ceiling is allowed: the bound is where the cliff is, not
+    // one cautious step before it.
+    const exact = createMatch(
+      setup({
+        players: duellists(),
+        map: null,
+        config: { map: { ...DEFAULT_MATCH_CONFIG.map, playerRadius: ceiling } },
+      }),
+      deps(),
+    );
+    expect(exact.ok).toBe(true);
   });
 });
 
