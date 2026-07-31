@@ -4,24 +4,25 @@ Une décision structurante, une ADR. Numérotées, jamais réécrites : une déc
 qu'on abandonne passe en `Statut : remplacé par NNNN`, et la nouvelle explique
 pourquoi.
 
-| N°                                                 | Décision                                                             | Statut          |
-| -------------------------------------------------- | -------------------------------------------------------------------- | --------------- |
-| [0001](0001-typescript-monorepo.md)                | TypeScript partout, monorepo pnpm, serveur `ws`, client React/Canvas | accepté         |
-| [0002](0002-no-eval-hand-written-parser.md)        | Aucune exécution de code joueur, parseur écrit à la main             | accepté         |
-| [0003](0003-frozen-contracts-package.md)           | Les contrats sont gelés dans `@fw/contracts`                         | accepté         |
-| [0004](0004-determinism.md)                        | Hasard seedé, horloge injectée, paramètres de tracé contractuels     | accepté         |
-| [0005](0005-in-memory-server-state.md)             | L'état du serveur vit en mémoire seulement                           | accepté         |
-| [0006](0006-client-side-curve-preview.md)          | La prévisualisation de courbe est calculée par le client             | accepté         |
-| [0007](0007-continuity-as-only-validation.md)      | La continuité est la seule règle de validation                       | accepté         |
-| [0008](0008-map-generator-knows-the-seat-count.md) | Le générateur reçoit le nombre de sièges                             | accepté         |
-| [0009](0009-tracer-receives-an-evaluator.md)       | Le tracer reçoit un évaluateur au lieu de l'importer                 | accepté         |
-| [0010](0010-coverage-ceiling.md)                   | Plafond de couverture à 0,35                                         | accepté         |
-| [0011](0011-placement-rule-must-cut-both-ways.md)  | La règle de placement coupe dans les deux sens                       | amendé par 0015 |
-| [0012](0012-four-players.md)                       | Plafond de quatre joueurs                                            | amendé par 0015 |
-| [0013](0013-shooting-along-both-axes.md)           | `x = f(y)` par transposition, pas par un second tracer               | accepté         |
-| [0014](0014-difficulty-and-team-separation.md)     | Trois difficultés, et une distance par camp                          | amendé par 0015 |
-| [0015](0015-the-board-grows-with-the-lobby.md)     | Le terrain grandit avec le salon ; plafond par difficulté            | accepté         |
-| [0016](0016-a-bot-searches-it-does-not-solve.md)   | Un bot cherche par échantillonnage, il ne résout pas                 | accepté         |
+| N°                                                   | Décision                                                             | Statut          |
+| ---------------------------------------------------- | -------------------------------------------------------------------- | --------------- |
+| [0001](0001-typescript-monorepo.md)                  | TypeScript partout, monorepo pnpm, serveur `ws`, client React/Canvas | accepté         |
+| [0002](0002-no-eval-hand-written-parser.md)          | Aucune exécution de code joueur, parseur écrit à la main             | accepté         |
+| [0003](0003-frozen-contracts-package.md)             | Les contrats sont gelés dans `@fw/contracts`                         | accepté         |
+| [0004](0004-determinism.md)                          | Hasard seedé, horloge injectée, paramètres de tracé contractuels     | accepté         |
+| [0005](0005-in-memory-server-state.md)               | L'état du serveur vit en mémoire seulement                           | accepté         |
+| [0006](0006-client-side-curve-preview.md)            | La prévisualisation de courbe est calculée par le client             | accepté         |
+| [0007](0007-continuity-as-only-validation.md)        | La continuité est la seule règle de validation                       | accepté         |
+| [0008](0008-map-generator-knows-the-seat-count.md)   | Le générateur reçoit le nombre de sièges                             | accepté         |
+| [0009](0009-tracer-receives-an-evaluator.md)         | Le tracer reçoit un évaluateur au lieu de l'importer                 | accepté         |
+| [0010](0010-coverage-ceiling.md)                     | Plafond de couverture à 0,35                                         | accepté         |
+| [0011](0011-placement-rule-must-cut-both-ways.md)    | La règle de placement coupe dans les deux sens                       | amendé par 0015 |
+| [0012](0012-four-players.md)                         | Plafond de quatre joueurs                                            | amendé par 0015 |
+| [0013](0013-shooting-along-both-axes.md)             | `x = f(y)` par transposition, pas par un second tracer               | accepté         |
+| [0014](0014-difficulty-and-team-separation.md)       | Trois difficultés, et une distance par camp                          | amendé par 0015 |
+| [0015](0015-the-board-grows-with-the-lobby.md)       | Le terrain grandit avec le salon ; plafond par difficulté            | accepté         |
+| [0016](0016-a-bot-searches-it-does-not-solve.md)     | Un bot cherche par échantillonnage, il ne résout pas                 | accepté         |
+| [0017](0017-a-player-fits-inside-the-sealed-band.md) | Un joueur tient dans la bande scellée : `playerRadius` est borné     | accepté         |
 
 ## Quand écrire une ADR
 

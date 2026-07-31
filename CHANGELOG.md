@@ -29,6 +29,32 @@ Versions : [SemVer](https://semver.org/lang/fr/).
     inventée. Mesuré : 0,00 % de réussite sur 12 000 tirs aléatoires, contre
     0,16 % en `facile`, sur des terrains qui restent traversables par
     construction.
+- **`pnpm run balance` : la campagne d'équilibrage.** Des bots jouent les uns
+  contre les autres, beaucoup, et le tableau qui sort dit combien de temps dure
+  une partie. Tout vient d'une graine : un nombre imprimé se reproduit avec la
+  même commande. Réglages : nombre de parties, difficulté, niveau, sièges,
+  bouclier, rayon.
+
+  Ce qu'elle a mesuré aux règles par défaut, 120 duels par case : un joueur qui
+  corrige d'un tir sur l'autre élimine en une vingtaine de tours. Les 220 tirs
+  qui traînaient dans la documentation décrivaient un tireur qui ne regarde pas
+  où sa courbe s'est arrêtée ; regarder change tout, d'un facteur dix. Sur un
+  terrain `difficile`, le même joueur met 14 tours au lieu de 5, et plus de la
+  moitié des parties n'ont pas de vainqueur au bout de deux cents tours.
+
+- **`playerRadius` est borné, et la dette la plus dangereuse est fermée**
+  ([ADR 0017](docs/adr/0017-a-player-fits-inside-the-sealed-band.md)). On savait
+  depuis l'ADR 0011 qu'une cible plus large que la bande scellée se touche au
+  premier tir plat. La campagne l'a chiffré, et ce n'est pas une pente, c'est
+  une falaise : à rayon 3 sur le terrain par défaut, 2 % des tirs touchent et un
+  duel dure neuf tours ; à 3,5, **100 %** des tirs touchent et toutes les
+  parties finissent au premier tour.
+
+  `maxPlayerRadiusFor(bounds)` donne la borne, `TRIVIAL_CURVE_FRACTION` passe de
+  `@fw/physics` aux contrats, et `createMatch` refuse une configuration hors
+  borne avec `ERR_PLAYER_RADIUS_TOO_LARGE` — dont le message dit pourquoi et
+  propose les deux issues.
+
 - **`@fw/bot` : de quoi jouer seul.** L'hôte ajoute des bots au salon, à trois
   niveaux, et ils prennent leur tour sans qu'on leur demande.
 
@@ -154,16 +180,6 @@ Versions : [SemVer](https://semver.org/lang/fr/).
   les déclarations produites par la compilation, et tournait avant elle.
 
 ### Connu et non résolu
-
-- **Le rayon de hitbox peut défaire la règle de placement.** Une cible plus
-  large que la bande scellée se touche au premier tir plat ; c'est vrai au-delà
-  d'un rayon d'environ 3 sur la carte par défaut (1,5 par défaut, donc sans
-  danger tel quel). Élargir la bande en proportion a été essayé et écarté : la
-  génération à quatre joueurs tombe de 30/30 à 1/30. À trancher en BA-3.
-- **Une partie dure longtemps.** Un joueur qui tire au hasard met environ
-  220 tirs à en éliminer un autre, soit 0,5 % de réussite par tir. Un humain
-  qui corrige d'un tir sur l'autre fait mieux, de combien reste à mesurer
-  (tâche BA-3).
 
 - Générer une carte à sept sièges en `difficile` coûte 1,2 s, et le serveur est
   mono-thread : c'est du gel pour tous les salons, une fois par partie. Mesuré

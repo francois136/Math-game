@@ -77,6 +77,8 @@ const FR: Formatters = {
       : `Il faut au moins deux équipes, vous en avez ${String(p.count)}.`,
   ERR_TOO_MANY_SEATS_FOR_DIFFICULTY: (p) =>
     `À ${p.difficulty}, un terrain accueille ${String(p.max)} joueurs au plus, et vous êtes ${String(p.count)}. Passez la difficulté du terrain à « modérée » pour jouer à autant.`,
+  ERR_PLAYER_RADIUS_TOO_LARGE: (p) =>
+    `Des joueurs de rayon ${String(p.radius)} sont trop gros pour ce terrain : au-delà de ${String(p.max)}, ils dépassent des obstacles posés pour les cacher et le premier tir plat gagne. Réduis le rayon, ou agrandis le terrain.`,
   ERR_MAP_GENERATION_FAILED: (p) =>
     `Impossible de générer une carte équilibrée en ${String(p.attempts)} tentatives. Change de graine ou baisse les contraintes de placement.`,
 

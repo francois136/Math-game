@@ -27,7 +27,8 @@
     "check": "pnpm run format:check && pnpm run typecheck && pnpm run lint && pnpm run test",
     "demo": "pnpm --filter @fw/cli exec node dist/demo.js",
     "hotseat": "pnpm --filter @fw/cli exec node dist/hotseat.js",
-    "serve": "pnpm --filter @fw/server exec node dist/main.js"
+    "serve": "pnpm --filter @fw/server exec node dist/main.js",
+    "balance": "pnpm --filter @fw/cli exec node dist/balance.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

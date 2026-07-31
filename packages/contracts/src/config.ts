@@ -143,7 +143,10 @@ export const MapParamsSchema = z.object({
   spawnMinDistanceEnemies: z.number().positive(),
   /** Distance kept clear around each spawn point. */
   spawnClearance: z.number().positive(),
-  /** Hitbox radius of a player. */
+  /**
+   * Hitbox radius of a player. Bounded by `maxPlayerRadiusFor`: a target wider
+   * than the sealed band is a target the generator did not hide (ADR 0017).
+   */
   playerRadius: z.number().positive(),
   /**
    * Sight-line check: how many simple curves (lines and parabolas) are sampled
@@ -169,6 +172,33 @@ export const DEFAULT_MAP_PARAMS: MapParams = Object.freeze({
   sightLineSamples: 9,
   maxGenerationAttempts: 200,
 });
+
+/**
+ * What counts as a *trivial* curve: an arc rising at most this fraction of the
+ * field's height between two players.
+ *
+ * The map generator seals every one of them, at every difficulty — that rule is
+ * not a setting. It lives here rather than in @fw/physics because a second
+ * thing depends on it: a player wider than the sealed band sticks out of it,
+ * and the first flat shot wins. See `maxPlayerRadiusFor`.
+ */
+export const TRIVIAL_CURVE_FRACTION = 0.05;
+
+/**
+ * The widest a player may be on a given field.
+ *
+ * Measured, and the cliff is sharp: on the default 100 x 60 field the sealed
+ * band is 3 units, and a radius of 3 plays normally — 2% of shots land — while
+ * a radius of 3.5 makes *every* shot land and every match end on turn one. A
+ * hitbox larger than the band the generator sealed is a hitbox the generator
+ * did not hide (ADR 0017).
+ *
+ * Widening the band in proportion instead was tried and rejected: four-player
+ * generation collapsed from 30/30 to 1/30.
+ */
+export function maxPlayerRadiusFor(bounds: MapParams['bounds']): number {
+  return (bounds.max.y - bounds.min.y) * TRIVIAL_CURVE_FRACTION;
+}
 
 /**
  * How many seats a difficulty can actually hold.

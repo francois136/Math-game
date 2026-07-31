@@ -1,4 +1,5 @@
 import {
+  TRIVIAL_CURVE_FRACTION,
   createRng,
   err,
   fwError,
@@ -70,7 +71,6 @@ const SCATTER_BUDGET_SHARE = 0.35;
  * through, may get through, or must not, is exactly what the difficulty says
  * (ADR 0014).
  */
-const TRIVIAL_SAGITTA_FRACTION = 0.05;
 const WIDE_SAGITTA_FRACTION = 1;
 const WIDE_SAMPLES = 41;
 
@@ -281,7 +281,7 @@ function firstClearCurve(
 }
 
 const trivialSpan = (params: MapParams): number =>
-  (params.bounds.max.y - params.bounds.min.y) * TRIVIAL_SAGITTA_FRACTION;
+  (params.bounds.max.y - params.bounds.min.y) * TRIVIAL_CURVE_FRACTION;
 
 const wideSpan = (params: MapParams): number =>
   (params.bounds.max.y - params.bounds.min.y) * WIDE_SAGITTA_FRACTION;

@@ -2,6 +2,7 @@ import {
   createRng,
   err,
   fwError,
+  maxPlayerRadiusFor,
   maxSeatsFor,
   ok,
   sizedForSeats,
@@ -40,6 +41,18 @@ export function createMatch(setup: MatchSetup, deps: RulesDeps): Result<MatchSta
 
   if (count < rules.minPlayers || count > rules.maxPlayers) {
     return err(fwError('ERR_NOT_ENOUGH_PLAYERS', { count, min: rules.minPlayers }));
+  }
+
+  // A player wider than the band the generator seals sticks out of it, and the
+  // first flat shot wins — measured, and the cliff is sharp (ADR 0017).
+  const radiusCeiling = maxPlayerRadiusFor(mapParams.bounds);
+  if (mapParams.playerRadius > radiusCeiling) {
+    return err(
+      fwError('ERR_PLAYER_RADIUS_TOO_LARGE', {
+        radius: mapParams.playerRadius,
+        max: radiusCeiling,
+      }),
+    );
   }
 
   // A field of a given difficulty can only hold so many seats, and finding out
