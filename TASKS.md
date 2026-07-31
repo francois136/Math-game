@@ -115,8 +115,8 @@ Demandé par le superviseur avant l'ouverture de la phase 6.
 
 | #    | Agent   | Tâche                                                                                                                     | Dépend de  | État |
 | ---- | ------- | ------------------------------------------------------------------------------------------------------------------------- | ---------- | ---- |
-| BA-1 | Rules   | Bot simple : famille de fonctions paramétrées, tir choisi par échantillonnage                                             | RU-8       | ☐    |
-| BA-2 | Rules   | Niveaux de bot et test qu'un bot ne gagne pas au premier tour sur 1 000 graines                                           | BA-1       | ☐    |
+| BA-1 | Rules   | Bot simple : famille de fonctions paramétrées, tir choisi par échantillonnage (ADR 0016)                                  | RU-8       | ☑    |
+| BA-2 | Rules   | Niveaux de bot, ordonnés par mesure ; aucun ne gagne au premier tour sous les règles par défaut                           | BA-1       | ☑    |
 | BA-3 | QA      | Campagne d'équilibrage : 1 000 parties simulées, statistiques de durée et de premier kill                                 | BA-2       | ☐    |
 | BA-8 | Physics | **Plafond de quatre joueurs levé** : terrain à l'échelle du salon, distances en unités, plafond par difficulté (ADR 0015) | PH-7       | ☑    |
 | BA-4 | Server  | Export de rejeu JSON en fin de partie                                                                                     | SV-10      | ☐    |
@@ -139,6 +139,9 @@ Demandé par le superviseur avant l'ouverture de la phase 6.
 - Générer une carte à sept sièges en `difficile` coûte 1,2 s pendant lesquelles
   le serveur ne répond à personne. Une fois par partie, mais mono-thread. À
   sortir du fil principal si un salon s'en plaint.
+- Un coup de bot `redoutable` coûte 220 tracés, soit ~70 ms de serveur bloqué.
+  Une table de huit bots redoutables gèle donc un demi-seconde entre deux coups
+  humains. Même remède que ci-dessus si cela devient gênant.
 - `playerRadius` peut défaire la règle de placement : une cible plus large que
   la bande scellée se touche au premier tir plat. Vrai au-delà d'environ 3 sur
   la carte par défaut. Élargir la bande en proportion casse la génération à

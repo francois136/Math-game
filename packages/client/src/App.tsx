@@ -215,6 +215,12 @@ export function App(): React.JSX.Element {
               },
             });
           }}
+          onAddBot={(level) => {
+            send({ type: 'lobby:add-bot', level });
+          }}
+          onRemove={(playerId) => {
+            send({ type: 'lobby:remove-player', playerId });
+          }}
           onStart={() => {
             send({ type: 'match:start', seed: null });
           }}

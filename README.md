@@ -31,7 +31,10 @@ français sans perdre son tour si elle est discontinue ou mal formée, la voir
 tracée sur une carte générée à la difficulté choisie par l'hôte, toucher, être
 éliminé, gagner.
 
-Ce qui manque : l'équilibrage, le bot et les rejeux (phase 6). Voir
+On peut jouer seul : l'hôte ajoute des bots au salon, à trois niveaux, et ils
+prennent leur tour sans qu'on leur demande.
+
+Ce qui manque : l'équilibrage chiffré et les rejeux (phase 6). Voir
 [`TASKS.md`](TASKS.md).
 
 ## Installation
@@ -60,11 +63,12 @@ pnpm run check           # format, lint, typecheck, tests
 | [`@fw/core-math`](packages/core-math) | Parseur, AST, évaluation, domaine, continuité     | ✅  |
 | [`@fw/physics`](packages/physics)     | Tracé adaptatif, collisions, cartes               | ✅  |
 | [`@fw/rules`](packages/rules)         | État de partie, tours, modes, victoire            | ✅  |
+| [`@fw/bot`](packages/bot)             | Choix d'un tir pour un siège vide                 | ✅  |
 | [`@fw/server`](packages/server)       | WebSocket, salons, sessions, orchestration        | —   |
 | [`@fw/client`](packages/client)       | Canvas, saisie, salon, animations                 | —   |
 
 « Pur » signifie : aucune dépendance vers le réseau, le DOM, le système de
-fichiers ou l'horloge. Ces trois paquets se testent intégralement en mémoire.
+fichiers ou l'horloge. Ces quatre paquets se testent intégralement en mémoire.
 
 ## Documentation
 

@@ -1,6 +1,8 @@
 import {
+  BOT_LEVEL_LABELS,
   fwError,
   MAX_PLAYERS,
+  type BotLevel,
   type FwError,
   type IdFactoryPort,
   type LobbyCode,
@@ -24,6 +26,8 @@ export interface Member {
   ready: boolean;
   connected: boolean;
   isSpectator: boolean;
+  /** Null for a human. A bot has no connection and is always ready. */
+  botLevel: BotLevel | null;
   /** Position in join order, used to hand the lobby over when the host leaves. */
   readonly joinedAt: number;
 }
@@ -66,6 +70,7 @@ export function addMember(
     ready: false,
     connected: true,
     isSpectator,
+    botLevel: null,
     joinedAt: lobby.joinCounter,
   };
   lobby.joinCounter += 1;
@@ -147,12 +152,28 @@ export function view(lobby: Lobby): LobbyState {
         teamId: member.teamId,
         ready: member.ready,
         connected: member.connected,
-        isBot: false,
+        isBot: member.botLevel !== null,
+        botLevel: member.botLevel,
         isSpectator: member.isSpectator,
       })),
     config: lobby.config,
     matchId: lobby.match?.id ?? null,
   };
+}
+
+/**
+ * Seat a bot.
+ *
+ * It is a `Member` like any other — same seat, same team slot, removed by the
+ * same `lobby:remove-player`. The only differences are that it has no socket,
+ * so `connected` is meaningless, and that it is ready the moment it sits down:
+ * nothing would ever tick its box.
+ */
+export function addBot(lobby: Lobby, playerId: PlayerId, level: BotLevel): Member {
+  const member = addMember(lobby, playerId, uniqueName(lobby, BOT_LEVEL_LABELS[level]), false);
+  member.botLevel = level;
+  member.ready = true;
+  return member;
 }
 
 /** Six unambiguous characters, retried until it does not collide. */

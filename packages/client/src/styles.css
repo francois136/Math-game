@@ -127,6 +127,18 @@ button.primaire:disabled {
   border-color: var(--trait);
   color: var(--doux);
 }
+/* A quiet button that sits inside a row of text, like the × on a lobby member. */
+button.discret {
+  padding: 2px 8px;
+  font-size: 13px;
+  line-height: 1.2;
+  color: var(--doux);
+  margin-left: auto;
+}
+button.discret:hover:not(:disabled) {
+  color: var(--danger);
+  border-color: var(--danger);
+}
 button.actif {
   border-color: var(--accent);
   color: var(--accent);

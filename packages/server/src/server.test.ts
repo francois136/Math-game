@@ -297,3 +297,77 @@ describe('losing and regaining a connection', () => {
     expect(client.last('error')?.error.code).toBe('ERR_UNAUTHORIZED');
   });
 });
+
+describe('bots', () => {
+  it('seats one, ready, named after its level', () => {
+    const { game } = serverWith();
+    const host = new Client(game);
+    host.hello('Anne');
+    host.say({ type: 'lobby:create', config: null });
+
+    host.say({ type: 'lobby:add-bot', level: 'confirme' });
+    const seated = lobbyOf(host).members.filter((member) => member.isBot);
+
+    expect(seated).toHaveLength(1);
+    expect(seated[0]?.name).toBe('Confirmé');
+    expect(seated[0]?.botLevel).toBe('confirme');
+    // Nothing would ever tick its box, so it sits down ready.
+    expect(seated[0]?.ready).toBe(true);
+  });
+
+  it('lets only the host add one', () => {
+    const { guest } = lobbyOfTwo();
+    guest.say({ type: 'lobby:add-bot', level: 'debutant' });
+    expect(guest.last('error')?.error.code).toBe('ERR_UNAUTHORIZED');
+    expect(lobbyOf(guest).members.filter((member) => member.isBot)).toHaveLength(0);
+  });
+
+  it('is removed like anyone else', () => {
+    const { game } = serverWith();
+    const host = new Client(game);
+    host.hello('Anne');
+    host.say({ type: 'lobby:create', config: null });
+    host.say({ type: 'lobby:add-bot', level: 'debutant' });
+
+    const botId = lobbyOf(host).members.find((member) => member.isBot)?.playerId;
+    expect(botId).toBeDefined();
+    if (botId === undefined) return;
+
+    host.say({ type: 'lobby:remove-player', playerId: botId });
+    expect(lobbyOf(host).members.filter((member) => member.isBot)).toHaveLength(0);
+  });
+
+  it('plays its own turn, without anyone asking', () => {
+    // The whole point: a human plus a bot is a playable match. The bot fires as
+    // soon as the turn reaches it, so control comes back to the human.
+    const { game } = serverWith();
+    const host = new Client(game);
+    host.hello('Anne');
+    host.say({
+      type: 'lobby:create',
+      config: { ...DEFAULT_MATCH_CONFIG, rules: { ...DEFAULT_MATCH_CONFIG.rules, shieldTurns: 0 } },
+    });
+    host.say({ type: 'lobby:add-bot', level: 'confirme' });
+    host.say({ type: 'lobby:ready', ready: true });
+    host.say({ type: 'match:start', seed: 'avec-un-bot' });
+
+    const opening = host.last('match:state')?.match;
+    expect(opening?.phase).toBe('running');
+    if (opening?.turn == null) return;
+
+    const humanId = host.last('welcome')?.playerId;
+    if (opening.turn.playerId !== humanId) {
+      // The bot opened: it has already fired and handed the turn back.
+      expect(opening.history.length).toBeGreaterThan(0);
+      expect(opening.turn.playerId).toBe(humanId);
+      return;
+    }
+
+    // The human passes; the bot must take its turn before control returns.
+    host.say({ type: 'turn:pass' });
+    const events = host.all('match:events').flatMap((message) => message.events);
+    const shots = events.filter((event) => event.kind === 'shot-resolved');
+    expect(shots.length).toBeGreaterThanOrEqual(1);
+    expect(shots.some((event) => event.record.playerId !== humanId)).toBe(true);
+  });
+});

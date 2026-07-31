@@ -201,3 +201,33 @@ test('an easy field turns away a lobby too big for it', async ({ browser }) => {
 
   await Promise.all(contexts.map((context) => context.close()));
 });
+
+test('a bot takes a seat and plays its own turn', async ({ browser }) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  await identify(page, 'Anne');
+  await page.getByTestId('creer').click();
+  await page.getByTestId('ajouter-bot-confirme').click();
+
+  await expect(page.getByTestId('membres')).toContainText('Confirmé');
+  await expect(page.getByTestId('membres')).toContainText('bot');
+
+  await page.getByTestId('pret').click();
+  await page.getByTestId('lancer').click();
+  await expect(page.getByTestId('plateau')).toBeVisible();
+
+  // Whoever opens, the human ends up on turn: the bot fires by itself.
+  const mine = async (): Promise<boolean> =>
+    (await page.getByTestId('tour').innerText()).includes('À toi');
+  if (!(await mine())) await expect(page.getByTestId('tour')).toContainText('À toi');
+
+  await page.getByTestId('fonction').fill('2*sin(x/3)');
+  await page.getByTestId('tirer').click();
+
+  // Two shots in the log: the human's, and the bot's answer.
+  await expect(page.getByTestId('journal')).toContainText('Confirmé');
+  await expect(page.getByTestId('tour')).toContainText('À toi');
+
+  await context.close();
+});

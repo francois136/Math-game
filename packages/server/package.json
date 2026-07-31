@@ -19,7 +19,8 @@
     "@fw/physics": "workspace:*",
     "@fw/rules": "workspace:*",
     "ws": "^8.19.0",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "@fw/bot": "workspace:*"
   },
   "devDependencies": {
     "@types/ws": "^8.18.1"

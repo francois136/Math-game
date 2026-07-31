@@ -28,6 +28,12 @@ sockets, lire l'heure, dessiner des pixels.
       │  continuité │ │ collisions│ │  victoire │  │
       └──────┬──────┘ └────┬─────┘ └─────┬─────┘  │
              │             │             │        │
+             │             │        ┌────▼─────┐  │
+             │             │        │ @fw/bot  │  │
+             │             │        │ cherche  │  │
+             │             │        │ un tir   │  │
+             │             │        └────┬─────┘  │
+             │             │             │        │
              └─────────────┴──────┬──────┘        │
                                   │               │
                           ┌───────▼───────┐  ┌────▼─────────┐
@@ -41,6 +47,12 @@ Les flèches descendent toujours. `contracts` ne dépend de personne ; aucun
 paquet pur ne dépend d'un paquet impur ; `core-math`, `physics` et `rules` ne
 dépendent pas les uns des autres — ils ne se parlent qu'à travers les ports que
 `rules` reçoit dans `deps`.
+
+`@fw/bot` est la seule exception, et elle est délibérée : il dépend de
+`@fw/rules` pour savoir qui est vulnérable. Dupliquer cette doctrine l'aurait
+fait diverger le jour où un mode de jeu s'ajoute
+([ADR 0016](adr/0016-a-bot-searches-it-does-not-solve.md)). Tout le reste — le
+parseur, le tracer — lui arrive par les mêmes ports qu'au moteur.
 
 Le client importe `core-math` : c'est la seule arête inhabituelle du graphe,
 et elle sert uniquement à dessiner la prévisualisation

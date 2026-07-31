@@ -15,10 +15,12 @@ import {
   type RulesEnginePort,
   type RulesDeps,
   type ServerFrame,
+  type BotPort,
   type ServerMessage,
   type SessionToken,
 } from '@fw/contracts';
 import {
+  addBot,
   addMember,
   canJoin,
   createLobby,
@@ -68,8 +70,12 @@ interface Conn {
   invalidInARow: number;
 }
 
+/** A bot table cannot hand the turn round for ever; see `playBots`. */
+const MAX_BOT_TURNS_IN_A_ROW = 256;
+
 export interface ServerDeps {
   readonly rules: RulesEnginePort;
+  readonly bot: BotPort;
   readonly engine: RulesDeps;
   readonly ids: IdFactoryPort;
   readonly clock: ClockPort;
@@ -160,6 +166,7 @@ export class GameServer {
       if (lobby.match !== null && lobby.match.phase === 'running' && lobby.match.turn !== null) {
         if (now >= lobby.match.turn.deadlineAt) {
           this.runCommand(lobby, { kind: 'timeout', atMs: now });
+          this.playBots(lobby);
         }
       }
 
@@ -227,6 +234,7 @@ export class GameServer {
       case 'lobby:configure':
       case 'lobby:set-team':
       case 'lobby:ready':
+      case 'lobby:add-bot':
       case 'lobby:remove-player':
         this.onLobbyEdit(session, replyTo, message);
         return;
@@ -246,12 +254,14 @@ export class GameServer {
             playerId: session.playerId,
             shot: message.shot,
           });
+          this.playBots(lobby);
         });
         return;
 
       case 'turn:pass':
         this.withMatch(session, replyTo, (lobby) => {
           this.runCommand(lobby, { kind: 'pass', playerId: session.playerId });
+          this.playBots(lobby);
         });
         return;
     }
@@ -387,7 +397,14 @@ export class GameServer {
     replyTo: number,
     message: Extract<
       ClientMessage,
-      { type: 'lobby:configure' | 'lobby:set-team' | 'lobby:ready' | 'lobby:remove-player' }
+      {
+        type:
+          | 'lobby:configure'
+          | 'lobby:set-team'
+          | 'lobby:ready'
+          | 'lobby:add-bot'
+          | 'lobby:remove-player';
+      }
     >,
   ): void {
     const lobby = this.lobbyOf(session);
@@ -416,6 +433,13 @@ export class GameServer {
 
     if (message.type === 'lobby:configure') {
       lobby.config = message.config;
+    } else if (message.type === 'lobby:add-bot') {
+      const room = canJoin(lobby, false);
+      if (!room.ok) {
+        this.send(session, replyTo, { type: 'error', error: room.error });
+        return;
+      }
+      addBot(lobby, this.deps.ids.playerId(), message.level);
     } else {
       this.releaseSeat(lobby, message.playerId);
     }
@@ -465,7 +489,7 @@ export class GameServer {
       id: member.playerId,
       name: member.name,
       teamId: member.teamId,
-      isBot: false,
+      isBot: member.botLevel !== null,
     }));
 
     const created = this.deps.rules.createMatch(
@@ -491,6 +515,8 @@ export class GameServer {
     lobby.seq = 0;
     this.broadcastLobby(lobby);
     this.broadcast(lobby, { type: 'match:state', match: created.value });
+    // A bot may hold the first turn.
+    this.playBots(lobby);
   }
 
   private onValidate(
@@ -573,6 +599,39 @@ export class GameServer {
       seq: lobby.seq,
       events: [...events],
     });
+  }
+
+  /**
+   * Let every bot whose turn it is play, until a human is up again.
+   *
+   * A loop and not recursion, and bounded: a table of bots hands the turn round
+   * and round, and a bug that stopped ending turns would otherwise take the
+   * server down rather than misbehave visibly. The bound is generous — no real
+   * match of eight bots reaches it in one call — and reaching it leaves the
+   * match in a consistent state, simply waiting for the next command.
+   */
+  private playBots(lobby: Lobby): void {
+    for (let guard = 0; guard < MAX_BOT_TURNS_IN_A_ROW; guard += 1) {
+      const match = lobby.match;
+      const activeId = match?.turn?.playerId;
+      if (match === null || match.phase !== 'running' || activeId === undefined) return;
+
+      const level = lobby.members.get(activeId)?.botLevel ?? null;
+      if (level === null) return;
+
+      this.runCommand(lobby, {
+        kind: 'fire',
+        playerId: activeId,
+        shot: this.deps.bot.chooseShot(match, activeId, level, this.deps.engine),
+      });
+
+      // A shot the rules refused would leave the same bot on turn for ever.
+      // The bot goes through the same parser and continuity check as a player,
+      // so this should not happen; if it does, pass rather than spin.
+      if (lobby.match?.turn?.playerId === activeId) {
+        this.runCommand(lobby, { kind: 'pass', playerId: activeId });
+      }
+    }
   }
 
   /** Free a seat, whether the player was kicked or their grace period ran out. */

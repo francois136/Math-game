@@ -128,7 +128,9 @@ Ajouter un type de message est compatible ; en retirer un, en changer la forme,
 ou changer le sens d'un champ ne l'est pas et impose un bump de version, avec
 une ADR.
 
-`lobby:add-bot` a été retiré avant la première mise en service : il n'y a pas de
-bot avant la phase 6, et un message auquel le serveur ne sait répondre que
-« pas encore » invite un client à écrire du code pour rien. Il reviendra avec le
-bot. La version reste 1, puisque aucun client n'a jamais parlé ce protocole.
+`lobby:add-bot` a été retiré avant la première mise en service, faute de bot, et
+est revenu avec lui. Il porte le niveau
+(`debutant`, `confirme`, `redoutable`), et un bot se retire par
+`lobby:remove-player` comme n'importe qui. `LobbyMember` gagne `botLevel`, non
+nul exactement quand `isBot`. La version reste 1 : ajouter un type de message et
+un champ à une vue est compatible.

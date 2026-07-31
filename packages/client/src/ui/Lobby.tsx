@@ -1,4 +1,11 @@
-import { maxSeatsFor, type Difficulty, type LobbyState } from '@fw/contracts';
+import {
+  BOT_LEVEL_LABELS,
+  maxSeatsFor,
+  type BotLevel,
+  type Difficulty,
+  type LobbyState,
+  type PlayerId,
+} from '@fw/contracts';
 
 const DIFFICULTIES: readonly { value: Difficulty; label: string; hint: string }[] = [
   { value: 'facile', label: 'Facile', hint: 'Une parabole relie toujours deux joueurs.' },
@@ -10,15 +17,27 @@ const DIFFICULTIES: readonly { value: Difficulty; label: string; hint: string }[
   { value: 'difficile', label: 'Difficile', hint: 'Une fonction passe, mais aucune parabole.' },
 ];
 
+const BOT_LEVELS: readonly BotLevel[] = ['debutant', 'confirme', 'redoutable'];
+
 interface Props {
   readonly lobby: LobbyState;
   readonly selfId: string | null;
   readonly onReady: (ready: boolean) => void;
   readonly onDifficulty: (difficulty: Difficulty) => void;
+  readonly onAddBot: (level: BotLevel) => void;
+  readonly onRemove: (playerId: PlayerId) => void;
   readonly onStart: () => void;
 }
 
-export function Lobby({ lobby, selfId, onReady, onDifficulty, onStart }: Props): React.JSX.Element {
+export function Lobby({
+  lobby,
+  selfId,
+  onReady,
+  onDifficulty,
+  onAddBot,
+  onRemove,
+  onStart,
+}: Props): React.JSX.Element {
   const me = lobby.members.find((member) => member.playerId === selfId);
   const isHost = lobby.hostId === selfId;
   const seated = lobby.members.filter((member) => !member.isSpectator);
@@ -40,6 +59,7 @@ export function Lobby({ lobby, selfId, onReady, onDifficulty, onStart }: Props):
           <li key={member.playerId} className={member.connected ? '' : 'absent'}>
             <span className="nom">{member.name}</span>
             {member.playerId === lobby.hostId && <span className="badge">hôte</span>}
+            {member.isBot && <span className="badge">bot</span>}
             {member.isSpectator ? (
               <span className="badge">spectateur</span>
             ) : (
@@ -47,7 +67,20 @@ export function Lobby({ lobby, selfId, onReady, onDifficulty, onStart }: Props):
                 {member.ready ? 'prêt' : 'pas prêt'}
               </span>
             )}
-            {!member.connected && <span className="badge">déconnecté</span>}
+            {!member.connected && !member.isBot && <span className="badge">déconnecté</span>}
+            {isHost && member.playerId !== selfId && (
+              <button
+                type="button"
+                className="discret"
+                data-testid={`retirer-${member.playerId}`}
+                title={`Retirer ${member.name}`}
+                onClick={() => {
+                  onRemove(member.playerId);
+                }}
+              >
+                ×
+              </button>
+            )}
           </li>
         ))}
       </ul>
@@ -77,6 +110,24 @@ export function Lobby({ lobby, selfId, onReady, onDifficulty, onStart }: Props):
           Ce terrain accueille {ceiling} joueurs au plus, et vous êtes {seated.length}. Passez la
           difficulté à « modérée » pour jouer à autant.
         </p>
+      )}
+
+      {isHost && (
+        <div className="sens" role="group" aria-label="Ajouter un bot">
+          {BOT_LEVELS.map((level) => (
+            <button
+              key={level}
+              type="button"
+              data-testid={`ajouter-bot-${level}`}
+              disabled={seated.length >= lobby.config.rules.maxPlayers}
+              onClick={() => {
+                onAddBot(level);
+              }}
+            >
+              + bot {BOT_LEVEL_LABELS[level].toLowerCase()}
+            </button>
+          ))}
+        </div>
       )}
 
       <div className="rangee">
