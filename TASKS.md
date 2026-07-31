@@ -113,16 +113,16 @@ Demandé par le superviseur avant l'ouverture de la phase 6.
 
 ## Phase 6 — Équilibrage, bot, rejeux
 
-| #    | Agent   | Tâche                                                                                                                              | Dépend de  | État |
-| ---- | ------- | ---------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---- |
-| BA-1 | Rules   | Bot simple : famille de fonctions paramétrées, tir choisi par échantillonnage                                                      | RU-8       | ☐    |
-| BA-2 | Rules   | Niveaux de bot et test qu'un bot ne gagne pas au premier tour sur 1 000 graines                                                    | BA-1       | ☐    |
-| BA-3 | QA      | Campagne d'équilibrage : 1 000 parties simulées, statistiques de durée et de premier kill                                          | BA-2       | ☐    |
-| BA-8 | Physics | **Plafond de quatre joueurs à lever** : les deux contraintes de placement (ADR 0011) ne sont pas satisfiables à six sièges et plus | PH-7       | ☐    |
-| BA-4 | Server  | Export de rejeu JSON en fin de partie                                                                                              | SV-10      | ☐    |
-| BA-5 | Client  | Lecture d'un rejeu, pas à pas                                                                                                      | BA-4, CL-6 | ☐    |
-| BA-6 | Rules   | Résolution simultanée : trancher l'ordre des tirs croisés, ADR, puis implémenter                                                   | RU-8       | ☐    |
-| BA-7 | Lead    | Documentation finale, captures, guide de déploiement                                                                               | tout       | ☐    |
+| #    | Agent   | Tâche                                                                                                                     | Dépend de  | État |
+| ---- | ------- | ------------------------------------------------------------------------------------------------------------------------- | ---------- | ---- |
+| BA-1 | Rules   | Bot simple : famille de fonctions paramétrées, tir choisi par échantillonnage                                             | RU-8       | ☐    |
+| BA-2 | Rules   | Niveaux de bot et test qu'un bot ne gagne pas au premier tour sur 1 000 graines                                           | BA-1       | ☐    |
+| BA-3 | QA      | Campagne d'équilibrage : 1 000 parties simulées, statistiques de durée et de premier kill                                 | BA-2       | ☐    |
+| BA-8 | Physics | **Plafond de quatre joueurs levé** : terrain à l'échelle du salon, distances en unités, plafond par difficulté (ADR 0015) | PH-7       | ☑    |
+| BA-4 | Server  | Export de rejeu JSON en fin de partie                                                                                     | SV-10      | ☐    |
+| BA-5 | Client  | Lecture d'un rejeu, pas à pas                                                                                             | BA-4, CL-6 | ☐    |
+| BA-6 | Rules   | Résolution simultanée : trancher l'ordre des tirs croisés, ADR, puis implémenter                                          | RU-8       | ☐    |
+| BA-7 | Lead    | Documentation finale, captures, guide de déploiement                                                                      | tout       | ☐    |
 
 ---
 
@@ -131,9 +131,14 @@ Demandé par le superviseur avant l'ouverture de la phase 6.
 - L'ordre de résolution en mode simultané n'est pas tranché (BA-6). Le champ
   `RuleSet.simultaneousResolution` existe mais aucune implémentation ne le lit.
 - Le format de rejeu partageable n'est pas figé (BA-4).
-- **Le jeu plafonne à quatre joueurs**, décidé par le superviseur et inscrit
-  dans les contrats ([ADR 0012](docs/adr/0012-four-players.md)). Lever le
-  plafond suppose de rouvrir l'ADR 0011 — tâche BA-8.
+- **Le jeu monte à huit joueurs en `moderee`, cinq en `facile`, sept en
+  `difficile`** ([ADR 0015](docs/adr/0015-the-board-grows-with-the-lobby.md)).
+  Monter `facile` plus haut suppose d'assouplir l'ADR 0011 : sa promesse qu'une
+  parabole relie chaque paire est ce qui plafonne, et elle croît comme le carré
+  de l'effectif.
+- Générer une carte à sept sièges en `difficile` coûte 1,2 s pendant lesquelles
+  le serveur ne répond à personne. Une fois par partie, mais mono-thread. À
+  sortir du fil principal si un salon s'en plaint.
 - `playerRadius` peut défaire la règle de placement : une cible plus large que
   la bande scellée se touche au premier tir plat. Vrai au-delà d'environ 3 sur
   la carte par défaut. Élargir la bande en proportion casse la génération à
@@ -145,10 +150,10 @@ Demandé par le superviseur avant l'ouverture de la phase 6.
   origine de façon monotone dans la variable du tir. `selfImmunityArc` protège
   donc du départ, et de rien d'autre, et doit rester supérieur au rayon de
   hitbox.
-- `enemySeparationFraction` plafonne à 0,45 à quatre ennemis mutuels : la zone
-  utile fait 88 × 48 et quatre points deux à deux distants de 50 n'y tiennent
-  pas ([ADR 0014](docs/adr/0014-difficulty-and-team-separation.md)). Un terrain
-  plus haut lèverait la contrainte ; à mesurer avec BA-8.
+- Une carte plus petite que celle par défaut doit baisser
+  `spawnMinDistanceEnemies` : 45 unités ne traversent pas un plateau large de 50,
+  et le générateur ne sortira aucune carte. Visible immédiatement, mais rien ne
+  le dit à l'hôte au moment du réglage.
 - La connexité monotone est discrétisée en 220 colonnes. Un obstacle plus fin
   qu'une colonne peut lui échapper. Le générateur n'en produit pas d'aussi fin ;
   une carte JSON écrite à la main le pourrait.

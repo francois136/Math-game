@@ -164,10 +164,15 @@ function randomObstacle(rng: Rng, params: MapParams, index: number): Obstacle {
 }
 
 /**
- * How far apart two seats have to stand.
+ * How far apart two seats have to stand, in world units.
  *
  * Team-mates may share a corner; enemies may not. A duel decided by who started
  * nearer is not a duel (ADR 0014).
+ *
+ * Both distances are absolute, and the board is what changes with the seat
+ * count (`sizedForSeats`). Eight enemies 45 units apart do not fit on the
+ * two-player field and no amount of retrying will make them; on the field eight
+ * players actually get, they fit with room to spare (ADR 0015).
  */
 export function requiredSeparation(params: MapParams, i: number, j: number): number {
   const a = params.spawnTeams[i] ?? null;
@@ -175,7 +180,7 @@ export function requiredSeparation(params: MapParams, i: number, j: number): num
   const sameSide = a !== null && a === b;
   return sameSide
     ? params.spawnMinDistanceAllies
-    : (params.bounds.max.x - params.bounds.min.x) * params.enemySeparationFraction;
+    : Math.max(params.spawnMinDistanceAllies, params.spawnMinDistanceEnemies);
 }
 
 /**

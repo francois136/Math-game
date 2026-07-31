@@ -10,7 +10,16 @@ import {
   type Seed,
 } from '@fw/contracts';
 import { apply, createMatch } from './engine.js';
-import { deps, duellists, noShield, playerId, setup, stateWith, teamId } from './testing.js';
+import {
+  deps,
+  duellists,
+  noShield,
+  onField,
+  playerId,
+  setup,
+  stateWith,
+  teamId,
+} from './testing.js';
 
 const TURN = DEFAULT_MATCH_CONFIG.rules.turnDurationMs;
 
@@ -449,5 +458,57 @@ describe('what the generator is told about the players', () => {
     createMatch(setup({ players: duellists(), map: null }), spying.deps);
     const params = spying.params();
     expect(params?.spawnTeams).toEqual([null, null]);
+  });
+
+  it('asks for a bigger board when there are more players', () => {
+    // Six players on the two-player field cannot be kept apart at all, so the
+    // field grows instead of the distance shrinking (ADR 0015).
+    const spying = watchingTheGenerator();
+    const crowd = Array.from({ length: 6 }, (_, i) => ({
+      id: playerId(`joueur-${String(i)}`),
+      name: `Joueur ${String(i)}`,
+      teamId: null,
+      isBot: false,
+    }));
+
+    const result = createMatch(
+      setup({ players: crowd, map: null, config: onField('moderee') }),
+      spying.deps,
+    );
+    expect(result.ok).toBe(true);
+
+    const params = spying.params();
+    const width = (p: MapParams): number => p.bounds.max.x - p.bounds.min.x;
+    expect(params).not.toBeNull();
+    if (params === null) return;
+    expect(width(params)).toBeGreaterThan(width(DEFAULT_MATCH_CONFIG.map));
+    // …and the enemy distance is untouched: it is the room that changed.
+    expect(params.spawnMinDistanceEnemies).toBe(DEFAULT_MATCH_CONFIG.map.spawnMinDistanceEnemies);
+  });
+});
+
+describe('a field that cannot hold the lobby', () => {
+  it('refuses six players on an easy field before generating anything', () => {
+    // `facile` promises a parabola between every pair, and there are fifteen
+    // pairs at six seats. Refusing here beats a full lobby watching an error
+    // it cannot read (ADR 0015).
+    const spying = watchingTheGenerator();
+    const crowd = Array.from({ length: 6 }, (_, i) => ({
+      id: playerId(`joueur-${String(i)}`),
+      name: `Joueur ${String(i)}`,
+      teamId: null,
+      isBot: false,
+    }));
+
+    const result = createMatch(
+      setup({ players: crowd, map: null, config: onField('facile') }),
+      spying.deps,
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe('ERR_TOO_MANY_SEATS_FOR_DIFFICULTY');
+    // Refused *before* the generator was asked to do the impossible.
+    expect(spying.params()).toBeNull();
   });
 });

@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_MAP_PARAMS, SeedSchema, type GameMap, type MapParams } from '@fw/contracts';
+import {
+  DEFAULT_MAP_PARAMS,
+  SeedSchema,
+  maxSeatsFor,
+  sizedForSeats,
+  type GameMap,
+  type MapParams,
+} from '@fw/contracts';
 import { generate, validate, GENERATOR_VERSION } from './mapgen.js';
 import { obstacleIdOf } from './testing.js';
 
@@ -27,17 +34,59 @@ describe('determinism', () => {
 });
 
 describe('what it produces', () => {
-  it('succeeds up to four seats', () => {
-    // Five is intermittent and six and above is out of reach with the default
-    // parameters — see ADR 0011 and the balancing task in TASKS.md. The
-    // generator refuses rather than shipping a map nobody could win, which is
-    // the behaviour the next test pins down.
-    for (const spawnCount of [2, 3, 4]) {
-      const params = { ...DEFAULT_MAP_PARAMS, spawnCount };
-      for (let i = 0; i < 5; i += 1) {
-        const result = generate(seed(`seat-${String(spawnCount)}-${String(i)}`), params);
-        expect(result.ok, `${String(spawnCount)} seats, seed ${String(i)}`).toBe(true);
-        if (result.ok) expect(result.value.spawns).toHaveLength(spawnCount);
+  it('succeeds at every seat count the difficulty allows', () => {
+    // On the board that seat count actually gets (`sizedForSeats`) and up to
+    // the ceiling that difficulty holds (`maxSeatsFor`) — the two halves of
+    // ADR 0015. Neither is optional: eight seats on the two-player field, or
+    // eight seats on `facile`, both fail by design.
+    for (const difficulty of ['facile', 'moderee', 'difficile'] as const) {
+      for (let spawnCount = 2; spawnCount <= maxSeatsFor(difficulty); spawnCount += 1) {
+        const params = sizedForSeats(
+          {
+            ...DEFAULT_MAP_PARAMS,
+            difficulty,
+            spawnCount,
+            spawnTeams: Array.from({ length: spawnCount }, () => null),
+          },
+          spawnCount,
+        );
+        // Two seeds per cell, not more: the grid is 18 cells wide and the
+        // expensive corners cost seconds each.
+        for (let i = 0; i < 2; i += 1) {
+          const label = `${difficulty}, ${String(spawnCount)} seats, seed ${String(i)}`;
+          const result = generate(
+            seed(`seat-${difficulty}-${String(spawnCount)}-${String(i)}`),
+            params,
+          );
+          expect(result.ok, label).toBe(true);
+          if (result.ok) expect(result.value.spawns).toHaveLength(spawnCount);
+        }
+      }
+    }
+  });
+
+  it('keeps enemies a full 45 units apart even at eight seats', () => {
+    // The point of growing the board rather than shrinking the gap: more
+    // players must not mean closer enemies (ADR 0015).
+    const spawnCount = 8;
+    const params = sizedForSeats(
+      {
+        ...DEFAULT_MAP_PARAMS,
+        difficulty: 'moderee',
+        spawnCount,
+        spawnTeams: Array.from({ length: spawnCount }, () => null),
+      },
+      spawnCount,
+    );
+    const map = generated('huit', params);
+
+    for (let i = 0; i < map.spawns.length; i += 1) {
+      for (let j = i + 1; j < map.spawns.length; j += 1) {
+        const a = map.spawns[i]!.position;
+        const b = map.spawns[j]!.position;
+        expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThanOrEqual(
+          DEFAULT_MAP_PARAMS.spawnMinDistanceEnemies,
+        );
       }
     }
   });
@@ -301,7 +350,7 @@ describe('who stands where', () => {
   it('keeps enemies apart by nearly half the field', () => {
     const params = teamed([null, null, null, null]);
     const map = generated('ennemis', params);
-    const wanted = (params.bounds.max.x - params.bounds.min.x) * params.enemySeparationFraction;
+    const wanted = params.spawnMinDistanceEnemies;
 
     for (let i = 0; i < map.spawns.length; i += 1) {
       for (let j = i + 1; j < map.spawns.length; j += 1) {
@@ -316,8 +365,7 @@ describe('who stands where', () => {
   it('lets team-mates stand together, and still keeps the sides apart', () => {
     const params = teamed([0, 0, 1, 1]);
     const map = generated('equipes', params);
-    const enemyDistance =
-      (params.bounds.max.x - params.bounds.min.x) * params.enemySeparationFraction;
+    const enemyDistance = params.spawnMinDistanceEnemies;
 
     const between = (i: number, j: number): number => {
       const a = map.spawns[i]!.position;

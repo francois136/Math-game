@@ -120,6 +120,13 @@ button.primaire {
   color: #06121b;
   font-weight: 600;
 }
+/* Faded is not enough for the primary button: at 42% the accent still reads as
+   the brightest thing on the screen. A disabled one drops the fill entirely. */
+button.primaire:disabled {
+  background: transparent;
+  border-color: var(--trait);
+  color: var(--doux);
+}
 button.actif {
   border-color: var(--accent);
   color: var(--accent);

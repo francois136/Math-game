@@ -49,8 +49,9 @@ Une cible dont `immuneUntilArc` dépasse la longueur d'arc courante est ignorée
 - Obstacles : rectangles et disques d'abord, polygones convexes ensuite.
 - Contrainte de couverture (`maxCoverage`), de dégagement autour des points
   d'apparition (`spawnClearance`), et de distance entre eux — deux distances
-  distinctes : `spawnMinDistanceAllies` entre coéquipiers, et
-  `enemySeparationFraction` de la largeur du terrain entre adversaires.
+  distinctes, toutes deux en unités de monde : `spawnMinDistanceAllies` entre
+  coéquipiers, `spawnMinDistanceEnemies` entre adversaires. Ce qui s'adapte à
+  l'effectif, c'est le terrain (`sizedForSeats`), pas la distance (ADR 0015).
 - **Validation anti-tir facile** : pour chaque paire de points d'apparition, on
   échantillonne des droites et des paraboles simples les reliant, dans les deux
   orientations ; si l'une passe sans rencontrer d'obstacle, la carte est rejetée

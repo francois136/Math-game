@@ -28,11 +28,15 @@ export const MAX_TRACE_POINTS = 20_000;
 export const SHOT_BUDGET_MS = 16;
 
 /**
- * Most players in one match.
+ * Most players in one match — the eight the brief asked for.
  *
- * Four, not the eight the brief asked for. This is not a technical shortcut: at
- * six seats and above the map generator cannot satisfy its two placement rules
- * at once — nothing trivial may connect two players, and something must — and
- * enlarging the field does not help. Measured and recorded in ADR 0012.
+ * It was four until the difficulty settings arrived. The cap came entirely from
+ * `facile`'s promise that a simple parabola joins every pair: the number of
+ * pairs grows as the square of the seat count and the promise becomes
+ * unsatisfiable. Monotone connectivity, which is all `moderee` and `difficile`
+ * require, does not (ADR 0015).
+ *
+ * How many seats a *given difficulty* can hold is `maxSeatsFor`, and it is
+ * enforced when the match starts, so no lobby fills up only to fail.
  */
-export const MAX_PLAYERS = 4;
+export const MAX_PLAYERS = 8;

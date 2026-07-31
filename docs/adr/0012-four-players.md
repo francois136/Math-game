@@ -1,6 +1,7 @@
 # 0012 — Une partie compte au plus quatre joueurs
 
-- **Statut** : accepté
+- **Statut** : amendé par [0015](0015-the-board-grows-with-the-lobby.md) — le
+  plafond dépend maintenant de la difficulté et monte jusqu'à huit
 - **Date** : 2026-07-30
 - **Décide** : le superviseur, sur la mesure de l'[ADR 0011](0011-placement-rule-must-cut-both-ways.md)
 

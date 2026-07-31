@@ -197,15 +197,26 @@ inventer.
 
 ### Qui se place où
 
-Deux distances minimales, pas une :
+Deux distances minimales, pas une, et toutes deux **en unités de monde** :
 
 - **coéquipiers** : `spawnMinDistanceAllies`, 12 unités par défaut ;
-- **adversaires** : `enemySeparationFraction` de la largeur du terrain, **0,45**
-  par défaut, soit 45 unités sur 100.
+- **adversaires** : `spawnMinDistanceEnemies`, **45 unités** par défaut, soit
+  près de la moitié de la largeur du terrain à deux joueurs.
 
-0,5 était la proposition initiale ; à quatre ennemis mutuels c'est
-géométriquement impossible sur la zone utile de 88 × 48. 0,45 tient à quatre,
-mesuré.
+0,5 de la largeur était la proposition initiale ; à quatre ennemis mutuels c'est
+géométriquement impossible sur la zone utile de 88 × 48.
+
+Ce qui s'adapte à l'effectif, c'est **le terrain, pas la distance**
+(`sizedForSeats`, [ADR 0015](adr/0015-the-board-grows-with-the-lobby.md)) : ×1
+jusqu'à quatre joueurs, ×1,3 à cinq, ×1,6 au-delà, le nombre d'obstacles suivant
+l'aire. Plus de joueurs ne veut donc pas dire des ennemis plus proches, mais
+plus de place. Une distance exprimée en fraction du terrain aurait fait
+l'inverse : exiger un écart plus grand au moment précis où il y a plus de monde
+à loger.
+
+Un terrain **plus petit** que celui par défaut doit baisser
+`spawnMinDistanceEnemies` en proportion : 45 unités ne traversent pas un plateau
+large de 50, et aucune carte ne sortira.
 
 Après `maxGenerationAttempts` échecs, `ERR_MAP_GENERATION_FAILED` : le
 générateur refuse plutôt que de livrer une carte injouable.
@@ -220,10 +231,24 @@ douze secondes. Le couplage est donc laissé tel quel, documenté, et confié à
 campagne d'équilibrage BA-3 ; en attendant, ne montez pas le rayon sans baisser
 la distance entre joueurs.
 
-**Plafond : quatre joueurs**, inscrit dans les contrats
-([ADR 0012](adr/0012-four-players.md)). Au-delà, les deux contraintes ne sont
-pas satisfiables et agrandir le terrain n'y change rien. Le mode équipes se
-joue donc à 2 contre 2.
+**Le plafond de joueurs dépend de la difficulté du terrain**
+([ADR 0015](adr/0015-the-board-grows-with-the-lobby.md)) :
+
+| difficulté | joueurs au plus | coût d'une carte au plafond |
+| ---------- | --------------- | --------------------------- |
+| facile     | 5               | 356 ms                      |
+| difficile  | 7               | 1,2 s                       |
+| modérée    | **8**           | 326 ms                      |
+
+C'est `facile` qui plafonne le plus bas, et pour une raison structurelle : elle
+promet qu'une parabole relie **chaque** paire, or le nombre de paires croît
+comme le carré de l'effectif. La connexité monotone, elle, tient à huit sans
+effort. Six joueurs en `facile` sortent bien une carte sur seize, mais à trois
+secondes et demie de serveur bloqué pièce — un prix qu'un salon n'a pas à payer.
+
+Le refus est précoce et lisible : `createMatch` rend
+`ERR_TOO_MANY_SEATS_FOR_DIFFICULTY` avant même d'appeler le générateur, et le
+salon désactive « Lancer » en disant quelle difficulté choisir.
 
 C'est le garde-fou le plus important : il agit sur la cause plutôt que sur le
 symptôme. Le générateur ne se contente pas d'espérer : il place les joueurs,
