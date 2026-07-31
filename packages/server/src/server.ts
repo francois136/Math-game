@@ -16,6 +16,7 @@ import {
   type RulesDeps,
   type ServerFrame,
   type BotPort,
+  type MatchState,
   type ReplayPort,
   type ServerMessage,
   type SessionToken,
@@ -643,25 +644,64 @@ export class GameServer {
   private playBots(lobby: Lobby): void {
     for (let guard = 0; guard < MAX_BOT_TURNS_IN_A_ROW; guard += 1) {
       const match = lobby.match;
-      const activeId = match?.turn?.playerId;
-      if (match === null || match.phase !== 'running' || activeId === undefined) return;
+      if (match === null || match.phase !== 'running' || match.turn === null) return;
 
-      const level = lobby.members.get(activeId)?.botLevel ?? null;
-      if (level === null) return;
+      const played = match.config.rules.simultaneousResolution
+        ? this.submitForBots(lobby, match)
+        : this.playOneBotTurn(lobby, match);
+      if (!played) return;
+    }
+  }
+
+  /** Turn-based: the bot holding the turn fires. Returns false if none does. */
+  private playOneBotTurn(lobby: Lobby, match: MatchState): boolean {
+    const activeId = match.turn?.playerId ?? null;
+    if (activeId === null) return false;
+
+    const level = lobby.members.get(activeId)?.botLevel ?? null;
+    if (level === null) return false;
+
+    this.runCommand(lobby, {
+      kind: 'fire',
+      playerId: activeId,
+      shot: this.deps.bot.chooseShot(match, activeId, level, this.deps.engine),
+    });
+
+    // A shot the rules refused would leave the same bot on turn for ever. The
+    // bot goes through the same parser and continuity check as a player, so
+    // this should not happen; if it does, pass rather than spin.
+    if (lobby.match?.turn?.playerId === activeId) {
+      this.runCommand(lobby, { kind: 'pass', playerId: activeId });
+    }
+    return true;
+  }
+
+  /**
+   * Simultaneous: every bot that has not answered this round does.
+   *
+   * They submit and the round waits for the humans, exactly as it should — a
+   * bot that resolved the round by itself would take the choice away from
+   * whoever was still writing (ADR 0019).
+   */
+  private submitForBots(lobby: Lobby, match: MatchState): boolean {
+    let any = false;
+
+    for (const player of match.players) {
+      if (!player.alive) continue;
+      if (match.pending.some((entry) => entry.playerId === player.id)) continue;
+
+      const level = lobby.members.get(player.id)?.botLevel ?? null;
+      if (level === null) continue;
 
       this.runCommand(lobby, {
         kind: 'fire',
-        playerId: activeId,
-        shot: this.deps.bot.chooseShot(match, activeId, level, this.deps.engine),
+        playerId: player.id,
+        shot: this.deps.bot.chooseShot(match, player.id, level, this.deps.engine),
       });
-
-      // A shot the rules refused would leave the same bot on turn for ever.
-      // The bot goes through the same parser and continuity check as a player,
-      // so this should not happen; if it does, pass rather than spin.
-      if (lobby.match?.turn?.playerId === activeId) {
-        this.runCommand(lobby, { kind: 'pass', playerId: activeId });
-      }
+      any = true;
     }
+    // Only worth looping again if a round resolved and a new one has opened.
+    return any && lobby.match?.turn?.index !== match.turn?.index;
   }
 
   /** Free a seat, whether the player was kicked or their grace period ran out. */

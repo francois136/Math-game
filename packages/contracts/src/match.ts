@@ -51,7 +51,14 @@ export type TurnRecord = z.infer<typeof TurnRecordSchema>;
 
 export const ActiveTurnSchema = z.object({
   index: z.number().int().nonnegative(),
-  playerId: PlayerIdSchema,
+  /**
+   * Whose turn it is, or null when it is everyone's.
+   *
+   * Nullable because of simultaneous resolution: a field that named a player
+   * anyway would be a field that lies, and the client would grey out the wrong
+   * things (ADR 0019).
+   */
+  playerId: PlayerIdSchema.nullable(),
   /** Epoch milliseconds. Injected by the server clock, never read ambiently. */
   deadlineAt: z.number().int().nonnegative(),
 });
@@ -63,6 +70,18 @@ export const MatchOutcomeSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('draw') }),
 ]);
 export type MatchOutcome = z.infer<typeof MatchOutcomeSchema>;
+
+/**
+ * What a player has decided this round, before it resolves. Simultaneous only.
+ *
+ * `shot` is null for a pass, which is a decision like any other: it says "I am
+ * done for this round", and the round can resolve without waiting further.
+ */
+export const PendingShotSchema = z.object({
+  playerId: PlayerIdSchema,
+  shot: ShotRequestSchema.nullable(),
+});
+export type PendingShot = z.infer<typeof PendingShotSchema>;
 
 /**
  * The whole match, server-side. It is a plain value: @fw/rules never mutates
@@ -79,6 +98,14 @@ export const MatchStateSchema = z.object({
   /** Turn order, decided once at match start from the seed. */
   order: z.array(PlayerIdSchema).min(2).max(MAX_PLAYERS),
   turn: ActiveTurnSchema.nullable(),
+  /**
+   * Shots waiting for the round to resolve. Always empty in turn-based play.
+   *
+   * Everyone's curve is traced against the state *before* any of them landed,
+   * so the outcome does not depend on the order these were submitted in
+   * (ADR 0019).
+   */
+  pending: z.array(PendingShotSchema).max(MAX_PLAYERS),
   history: z.array(TurnRecordSchema),
   outcome: MatchOutcomeSchema.nullable(),
 });
@@ -108,6 +135,11 @@ export type MatchCommand = z.infer<typeof MatchCommandSchema>;
 export const MatchEventSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('match-started'), order: z.array(PlayerIdSchema) }),
   z.object({ kind: z.literal('turn-started'), turn: ActiveTurnSchema }),
+  /**
+   * Simultaneous play only: someone has answered, and the round is waiting on
+   * the others. What they wrote stays hidden until it resolves (ADR 0019).
+   */
+  z.object({ kind: z.literal('shot-submitted'), playerId: PlayerIdSchema }),
   z.object({ kind: z.literal('shot-resolved'), record: TurnRecordSchema }),
   z.object({
     kind: z.literal('player-eliminated'),

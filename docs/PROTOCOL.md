@@ -57,6 +57,7 @@ demande ; le serveur ne s'en sert pas comme numéro de séquence de jeu.
 | `match:events`    | Après chaque commande appliquée. Incrémental, numéroté par `seq`       |
 | `shot:validation` | Réponse à `shot:validate`                                              |
 | `match:replay`    | À la fin d'une partie : tout le match, en quelques kilo-octets         |
+| `shot-submitted`  | (événement) En simultané : quelqu'un a répondu, sans dire quoi         |
 | `replay:state`    | Réponse à `replay:load` : la partie reconstruite, tracés compris       |
 | `error`           | Toute demande refusée                                                  |
 | `pong`            | Réponse à `ping`                                                       |

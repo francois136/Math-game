@@ -6,8 +6,10 @@ import {
   fwError,
   ok,
   type FwError,
+  type MatchCommand,
   type MatchState,
   type Replay,
+  type ReplayTurn,
   type Result,
   type RulesDeps,
 } from '@fw/contracts';
@@ -112,14 +114,7 @@ export function replay(
   for (const [index, turn] of doc.turns.entries()) {
     if (index >= wanted) break;
 
-    const applied = apply(
-      state,
-      turn.shot === null
-        ? { kind: 'pass', playerId: turn.playerId }
-        : { kind: 'fire', playerId: turn.playerId, shot: turn.shot },
-      deps,
-      turn.atMs,
-    );
+    const applied = apply(state, commandFor(turn), deps, turn.atMs);
 
     if (applied.state === state) {
       return err(
@@ -130,6 +125,27 @@ export function replay(
   }
 
   return ok(state);
+}
+
+/**
+ * The command that produced this turn.
+ *
+ * A turn skipped by the clock has to be replayed *as a timeout*: replaying it
+ * as a pass reproduces every elimination and records the wrong reason, which is
+ * a replay that does not reproduce. Likewise a turn lost to a disconnection.
+ */
+function commandFor(turn: ReplayTurn): MatchCommand {
+  if (turn.shot !== null) return { kind: 'fire', playerId: turn.playerId, shot: turn.shot };
+
+  switch (turn.skipped) {
+    case 'timeout':
+      return { kind: 'timeout', atMs: turn.atMs };
+    case 'disconnected':
+      return { kind: 'disconnect', playerId: turn.playerId };
+    case 'passed':
+    case null:
+      return { kind: 'pass', playerId: turn.playerId };
+  }
 }
 
 /** Every state of the match, from the start to the end. For a step-by-step viewer. */

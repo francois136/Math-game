@@ -13,6 +13,8 @@ import {
   type MatchSetup,
   type MatchSetupPlayer,
   type MatchState,
+  type ParsedExpression,
+  type PendingShot,
   type Player,
   type PlayerId,
   type Result,
@@ -20,6 +22,7 @@ import {
   type RulesDeps,
   type ShotRequest,
   type SpawnPoint,
+  type TraceResult,
   type TurnRecord,
   type TurnSkipReason,
 } from '@fw/contracts';
@@ -128,9 +131,11 @@ export function createMatch(setup: MatchSetup, deps: RulesDeps): Result<MatchSta
     order,
     turn: {
       index: 0,
-      playerId: firstId,
+      // Nobody in particular, when everybody fires at once (ADR 0019).
+      playerId: rules.simultaneousResolution ? null : firstId,
       deadlineAt: setup.startedAtMs + rules.turnDurationMs,
     },
+    pending: [],
     history: [],
     outcome: null,
   });
@@ -194,15 +199,20 @@ export function apply(
     return rejected(state, fwError('ERR_MATCH_NOT_RUNNING', { phase: state.phase }));
   }
 
+  const together = state.config.rules.simultaneousResolution;
+
   switch (command.kind) {
     case 'fire':
-      return applyFire(state, command.playerId, command.shot, deps, nowMs);
+      return together
+        ? submit(state, command.playerId, command.shot, deps, nowMs)
+        : applyFire(state, command.playerId, command.shot, deps, nowMs);
 
     case 'pass':
+      if (together) return submit(state, command.playerId, null, deps, nowMs);
       if (command.playerId !== state.turn.playerId) {
         return rejected(
           state,
-          fwError('ERR_NOT_YOUR_TURN', { activePlayerId: state.turn.playerId }),
+          fwError('ERR_NOT_YOUR_TURN', { activePlayerId: state.turn.playerId ?? '—' }),
         );
       }
       return endTurn(state, skipRecord(state, 'passed', nowMs), [], state.players, nowMs);
@@ -212,8 +222,66 @@ export function apply(
         // The clock fired early. Nothing in the match should move because of it.
         return rejected(state, fwError('ERR_INTERNAL', {}));
       }
-      return endTurn(state, skipRecord(state, 'timeout', nowMs), [], state.players, nowMs);
+      // Whoever has not submitted by the deadline has passed.
+      return together
+        ? resolveRound(state, deps, nowMs)
+        : endTurn(state, skipRecord(state, 'timeout', nowMs), [], state.players, nowMs);
   }
+}
+
+/**
+ * Take a shot in, and hold it until the round resolves.
+ *
+ * The function is checked here — parsed, budgeted, continuous — so a player who
+ * wrote something impossible learns it while they can still write something
+ * else. Only the tracing waits (ADR 0019).
+ *
+ * A `null` shot is a pass, which in simultaneous play is a real choice: it ends
+ * your round without firing.
+ */
+function submit(
+  state: MatchState,
+  playerId: PlayerId,
+  shot: ShotRequest | null,
+  deps: RulesDeps,
+  nowMs: number,
+): Applied {
+  const shooter = state.players.find((player) => player.id === playerId);
+  if (shooter === undefined || !shooter.alive) {
+    return rejected(state, fwError('ERR_PLAYER_ELIMINATED', {}));
+  }
+  if (state.pending.some((entry) => entry.playerId === playerId)) {
+    // One shot per round. There is no taking it back — that is the trade
+    // simultaneous play makes: less waiting, more commitment.
+    return rejected(state, fwError('ERR_NOT_YOUR_TURN', { activePlayerId: playerId }));
+  }
+
+  if (shot !== null) {
+    const accepted = accept(state, shooter, shot, deps);
+    if (!accepted.ok) return rejected(state, accepted.error);
+  }
+
+  const pending: PendingShot[] = [...state.pending, { playerId, shot }];
+  const waiting: MatchState = { ...state, pending };
+
+  // Everyone who could still act has answered — resolve, rather than sit on a
+  // deadline nobody is waiting for.
+  return everyoneHasAnswered(waiting)
+    ? resolveRound(waiting, deps, nowMs)
+    : { state: waiting, events: [{ kind: 'shot-submitted', playerId }] };
+}
+
+/**
+ * Has every player who can act this round done so?
+ *
+ * A disconnected player is not waited for: their round is a skipped turn, the
+ * same as in turn-based play.
+ */
+function everyoneHasAnswered(state: MatchState): boolean {
+  const answered = new Set(state.pending.map((entry) => entry.playerId));
+  return state.players
+    .filter((player) => player.alive && player.connected)
+    .every((player) => answered.has(player.id));
 }
 
 function applyConnection(
@@ -234,11 +302,15 @@ function applyConnection(
   return { state: next, events: [] };
 }
 
+/** Only ever called in turn-based play, where a turn belongs to someone. */
 function skipRecord(state: MatchState, reason: TurnSkipReason, nowMs: number): TurnRecord {
-  if (state.turn === null) throw new Error('skipRecord outside a turn');
+  const playerId = state.turn?.playerId;
+  if (state.turn === null || playerId === null || playerId === undefined) {
+    throw new Error('skipRecord outside a turn that belongs to a player');
+  }
   return {
     index: state.turn.index,
-    playerId: state.turn.playerId,
+    playerId,
     shot: null,
     trace: null,
     skipped: reason,
@@ -258,7 +330,10 @@ function applyFire(
     return rejected(state, fwError('ERR_MATCH_NOT_RUNNING', { phase: state.phase }));
   }
   if (playerId !== state.turn.playerId) {
-    return rejected(state, fwError('ERR_NOT_YOUR_TURN', { activePlayerId: state.turn.playerId }));
+    return rejected(
+      state,
+      fwError('ERR_NOT_YOUR_TURN', { activePlayerId: state.turn.playerId ?? '—' }),
+    );
   }
 
   const shooter = state.players.find((player) => player.id === playerId);
@@ -266,35 +341,10 @@ function applyFire(
     return rejected(state, fwError('ERR_PLAYER_ELIMINATED', {}));
   }
 
-  const parsed = deps.parser.parse(shot.source, shot.axis);
-  if (!parsed.ok) return rejected(state, parsed.error);
+  const accepted = accept(state, shooter, shot, deps);
+  if (!accepted.ok) return rejected(state, accepted.error);
 
-  const budget = state.config.rules.complexityBudget;
-  if (budget !== null && parsed.value.nodeCount > budget) {
-    return rejected(
-      state,
-      fwError('ERR_COMPLEXITY_BUDGET', { nodeCount: parsed.value.nodeCount, budget }),
-    );
-  }
-
-  const continuity = deps.continuity.check(
-    parsed.value,
-    intervalFor(state, shooter, shot),
-    state.config.trace,
-  );
-  if (!continuity.ok) return rejected(state, continuity.error);
-
-  const trace = deps.tracer.trace({
-    expression: parsed.value,
-    evaluator: deps.evaluator,
-    origin: shooter.origin,
-    axis: shot.axis,
-    direction: shot.direction,
-    map: state.map,
-    targets: targetsFor(state, shooter),
-    params: state.config.trace,
-    pierce: state.config.rules.pierce,
-  });
+  const trace = traceOf(state, shooter, shot, accepted.value, deps);
 
   const eliminated = trace.hits.filter((hit) => hit.lethal).map((hit) => hit.playerId);
   const players = state.players.map((player) =>
@@ -317,6 +367,164 @@ function applyFire(
   }));
 
   return endTurn(state, record, events, players, nowMs);
+}
+
+/**
+ * Resolve a whole round at once.
+ *
+ * Every curve is traced against `state` — the position *before* any of this
+ * round's shots landed — and all the eliminations are applied together
+ * afterwards. That is what makes the outcome independent of any order:
+ * permuting the players changes nothing (ADR 0019).
+ *
+ * Two consequences follow, and both are meant. Two players who hit each other
+ * both die. A curve that crosses someone another shot killed this round still
+ * counts, because both shots left at the same instant.
+ *
+ * Seats are walked in `order` only so the log reads in a stable sequence. It is
+ * a writing order, not a resolution order.
+ */
+function resolveRound(state: MatchState, deps: RulesDeps, nowMs: number): Applied {
+  const index = state.turn?.index ?? 0;
+  const records: TurnRecord[] = [];
+  const events: MatchEvent[] = [];
+  const fallen = new Set<PlayerId>();
+  const acted = new Set<PlayerId>();
+
+  for (const playerId of state.order) {
+    const shooter = state.players.find((player) => player.id === playerId);
+    if (shooter === undefined || !shooter.alive) continue;
+
+    const decision = state.pending.find((entry) => entry.playerId === playerId);
+    const shot = decision?.shot ?? null;
+
+    if (shot === null) {
+      records.push({
+        index,
+        playerId,
+        shot: null,
+        trace: null,
+        // Someone who answered chose to pass; someone who did not ran out of time.
+        skipped: decision === undefined ? 'timeout' : 'passed',
+        eliminated: [],
+        atMs: nowMs,
+      });
+      continue;
+    }
+
+    // Re-checked rather than trusted: `accept` ran when the shot was submitted,
+    // and nothing in between could have changed its verdict, but a round is
+    // resolved from the state and the state alone.
+    const accepted = accept(state, shooter, shot, deps);
+    if (!accepted.ok) {
+      records.push({
+        index,
+        playerId,
+        shot,
+        trace: null,
+        skipped: 'timeout',
+        eliminated: [],
+        atMs: nowMs,
+      });
+      continue;
+    }
+
+    const trace = traceOf(state, shooter, shot, accepted.value, deps);
+    const eliminated = trace.hits.filter((hit) => hit.lethal).map((hit) => hit.playerId);
+    for (const victim of eliminated) {
+      fallen.add(victim);
+      events.push({ kind: 'player-eliminated', playerId: victim, byPlayerId: playerId });
+    }
+    acted.add(playerId);
+    records.push({ index, playerId, shot, trace, skipped: null, eliminated, atMs: nowMs });
+  }
+
+  const players = state.players.map((player) => {
+    const alive = player.alive && !fallen.has(player.id);
+    if (!acted.has(player.id) || player.shieldTurnsLeft === 0) return { ...player, alive };
+    const shieldTurnsLeft = player.shieldTurnsLeft - 1;
+    if (shieldTurnsLeft === 0) events.push({ kind: 'shield-expired', playerId: player.id });
+    return { ...player, alive, shieldTurnsLeft };
+  });
+
+  const settled: MatchState = {
+    ...state,
+    players,
+    pending: [],
+    history: [...state.history, ...records],
+  };
+  const resolved: MatchEvent[] = records.map((record) => ({ kind: 'shot-resolved', record }));
+
+  const outcome = outcomeOf(settled);
+  if (outcome !== null) {
+    return {
+      state: { ...settled, phase: 'ended', turn: null, outcome },
+      events: [...resolved, ...events, { kind: 'match-ended', outcome }],
+    };
+  }
+
+  const turn = {
+    index: index + 1,
+    playerId: null,
+    deadlineAt: nowMs + state.config.rules.turnDurationMs,
+  };
+  return {
+    state: { ...settled, turn },
+    events: [...resolved, ...events, { kind: 'turn-started', turn }],
+  };
+}
+
+/**
+ * The gate a function has to pass before it is a shot: parsed, within budget,
+ * continuous where it would be drawn.
+ *
+ * Both modes go through it, and both go through it *before* anything is traced.
+ * In simultaneous play that matters twice over: a player learns their function
+ * is refused when they submit it, not at the end of the round when it is too
+ * late to write another (ADR 0019).
+ */
+function accept(
+  state: MatchState,
+  shooter: Player,
+  shot: ShotRequest,
+  deps: RulesDeps,
+): Result<ParsedExpression, FwError> {
+  const parsed = deps.parser.parse(shot.source, shot.axis);
+  if (!parsed.ok) return parsed;
+
+  const budget = state.config.rules.complexityBudget;
+  if (budget !== null && parsed.value.nodeCount > budget) {
+    return err(fwError('ERR_COMPLEXITY_BUDGET', { nodeCount: parsed.value.nodeCount, budget }));
+  }
+
+  const continuity = deps.continuity.check(
+    parsed.value,
+    intervalFor(state, shooter, shot),
+    state.config.trace,
+  );
+  if (!continuity.ok) return continuity;
+
+  return ok(parsed.value);
+}
+
+function traceOf(
+  state: MatchState,
+  shooter: Player,
+  shot: ShotRequest,
+  expression: ParsedExpression,
+  deps: RulesDeps,
+): TraceResult {
+  return deps.tracer.trace({
+    expression,
+    evaluator: deps.evaluator,
+    origin: shooter.origin,
+    axis: shot.axis,
+    direction: shot.direction,
+    map: state.map,
+    targets: targetsFor(state, shooter),
+    params: state.config.trace,
+    pierce: state.config.rules.pierce,
+  });
 }
 
 /**

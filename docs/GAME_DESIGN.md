@@ -325,9 +325,25 @@ les modes existants.
   automatiquement : aucun tir, `skipped: 'timeout'`.
 - Un joueur déconnecté conserve son siège ; ses tours sont passés jusqu'à son
   retour.
-- **Résolution simultanée** : prévue dans les règles
-  (`simultaneousResolution`), non implémentée. L'ordre de résolution des tirs
-  croisés est une décision de design qui reste à prendre, explicitement.
+- **Résolution simultanée** (`simultaneousResolution`, réglable au salon,
+  désactivée par défaut) : chacun écrit sa fonction, puis **tout se résout d'un
+  coup**. Le round se ferme dès que tous les vivants ont répondu, ou à
+  l'échéance — les silencieux comptant comme des tours expirés.
+
+  Toutes les courbes sont tracées contre le **même état**, celui d'avant le
+  round, et les éliminations s'appliquent ensemble
+  ([ADR 0019](adr/0019-simultaneous-shots-are-all-fired-at-once.md)). C'est la
+  seule règle qui ne dépende d'aucun ordre : permuter les joueurs ne change pas
+  le résultat, et c'est testé. Deux conséquences, voulues :
+
+  - **le double KO existe** — deux joueurs qui se touchent meurent tous les
+    deux, et si c'étaient les deux derniers, la partie est nulle ;
+  - **on peut toucher un mort** — une courbe qui traverse quelqu'un qu'un autre
+    tir du même round a tué compte quand même, parce que les deux tirs sont
+    partis au même instant.
+
+  Un tir soumis ne se retire pas. Le simultané troque l'attente contre
+  l'engagement — ce qui, à huit joueurs, remplace sept tours d'attente par un.
 
 ## 7. Ce que la campagne d'équilibrage a mesuré
 
@@ -373,6 +389,5 @@ configuration hors borne ne démarre plus.
 ## 8. Ce qui reste ouvert
 
 - Le format des rejeux partageables (phase 6).
-- L'ordre de résolution en mode simultané (voir plus haut).
 - L'équilibrage à plus de deux joueurs n'a pas été mesuré : la campagne le sait
   faire (`--seats`), personne ne l'a encore lancée.
