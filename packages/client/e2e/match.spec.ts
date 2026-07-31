@@ -231,3 +231,51 @@ test('a bot takes a seat and plays its own turn', async ({ browser }) => {
 
   await context.close();
 });
+
+test('a finished match can be downloaded and watched again', async ({ browser }) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  await identify(page, 'Anne');
+  await page.getByTestId('creer').click();
+  await page.getByTestId('ajouter-bot-redoutable').click();
+  await page.getByTestId('pret').click();
+  await page.getByTestId('lancer').click();
+  await expect(page.getByTestId('plateau')).toBeVisible();
+
+  // Pass until the bot wins. Playwright waits for the button to become
+  // actionable again, which is exactly "the bot has played and the turn is
+  // back" — polling `isDisabled` would read the bot's turn as the end of the
+  // match and leave after one pass.
+  for (let turn = 0; turn < 80; turn += 1) {
+    if ((await page.getByTestId('revoir-rejeu').count()) > 0) break;
+    try {
+      await page.getByTestId('passer').click({ timeout: 20_000 });
+    } catch {
+      break; // the match ended while we waited for our turn to come back
+    }
+  }
+  await expect(page.getByTestId('revoir-rejeu')).toBeVisible({ timeout: 30_000 });
+
+  // The replay is a real file, a few kilobytes of it.
+  const download = page.waitForEvent('download');
+  await page.getByTestId('telecharger-rejeu').click();
+  const file = await download;
+  expect(file.suggestedFilename()).toContain('functionwars-');
+
+  // And it can be walked, turn by turn, without the client having an engine.
+  await page.getByTestId('revoir-rejeu').click();
+  await expect(page.getByTestId('lecteur-rejeu')).toBeVisible();
+  await expect(page.getByTestId('rejeu-tour')).toContainText('Position de départ');
+  await expect(page.getByTestId('rejeu-precedent')).toBeDisabled();
+
+  await page.getByTestId('rejeu-suivant').click();
+  await expect(page.getByTestId('lecteur-rejeu')).toContainText('tour 1 sur');
+  await page.getByTestId('rejeu-fin').click();
+  await expect(page.getByTestId('rejeu-suivant')).toBeDisabled();
+
+  await page.getByTestId('rejeu-fermer').click();
+  await expect(page.getByTestId('lecteur-rejeu')).toHaveCount(0);
+
+  await context.close();
+});

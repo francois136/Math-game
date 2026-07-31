@@ -1,4 +1,4 @@
-import type { FwErrorWire, LobbyState, MatchState, ServerMessage } from '@fw/contracts';
+import type { FwErrorWire, LobbyState, MatchState, Replay, ServerMessage } from '@fw/contracts';
 
 /**
  * Everything the client knows, and it knows only what it was told.
@@ -19,6 +19,16 @@ export interface AppState {
   readonly validation: { ok: boolean; message: string | null } | null;
   /** Narration of the match, newest last. */
   readonly log: readonly string[];
+  /** The finished match as a document, once the server has sent it. */
+  readonly replay: Replay | null;
+  /**
+   * A replay being watched, and how far into it.
+   *
+   * The state here is the *finished* match: walking it is a matter of reading
+   * `history` up to `at`, which is drawing, not deciding. The client still has
+   * no engine (ADR 0006).
+   */
+  readonly watching: { readonly match: MatchState; readonly at: number } | null;
 }
 
 export const initialState: AppState = {
@@ -30,13 +40,18 @@ export const initialState: AppState = {
   error: null,
   validation: null,
   log: [],
+  replay: null,
+  watching: null,
 };
 
 export type Action =
   | { kind: 'connecting' }
   | { kind: 'closed' }
   | { kind: 'server'; message: ServerMessage }
-  | { kind: 'dismiss-error' };
+  | { kind: 'dismiss-error' }
+  /** Move the replay cursor. Clamped to the match it is walking. */
+  | { kind: 'seek'; to: number }
+  | { kind: 'stop-watching' };
 
 export function reduce(state: AppState, action: Action): AppState {
   switch (action.kind) {
@@ -48,6 +63,18 @@ export function reduce(state: AppState, action: Action): AppState {
       return { ...state, error: null, validation: null };
     case 'server':
       return applyServer(state, action.message);
+
+    case 'seek': {
+      if (state.watching === null) return state;
+      const last = state.watching.match.history.length;
+      return {
+        ...state,
+        watching: { ...state.watching, at: Math.min(Math.max(0, action.to), last) },
+      };
+    }
+
+    case 'stop-watching':
+      return { ...state, watching: null };
   }
 }
 
@@ -80,6 +107,13 @@ function applyServer(state: AppState, message: ServerMessage): AppState {
         ...state,
         validation: { ok: message.ok, message: message.error?.message ?? null },
       };
+
+    case 'match:replay':
+      return { ...state, replay: message.replay };
+
+    case 'replay:state':
+      // Start at the opening position, before anyone has fired.
+      return { ...state, watching: { match: message.match, at: 0 }, error: null };
 
     case 'error':
       return { ...state, error: message.error };

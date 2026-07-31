@@ -371,3 +371,71 @@ describe('bots', () => {
     expect(shots.some((event) => event.record.playerId !== humanId)).toBe(true);
   });
 });
+
+describe('replays', () => {
+  it('hands everyone the finished match as a document', () => {
+    const { game } = serverWith();
+    const host = new Client(game);
+    host.hello('Anne');
+    host.say({
+      type: 'lobby:create',
+      config: { ...DEFAULT_MATCH_CONFIG, rules: { ...DEFAULT_MATCH_CONFIG.rules, shieldTurns: 0 } },
+    });
+    host.say({ type: 'lobby:add-bot', level: 'redoutable' });
+    host.say({ type: 'lobby:ready', ready: true });
+    host.say({ type: 'match:start', seed: 'rejeu' });
+
+    // Play until someone wins or the patience runs out; the bot fires by itself.
+    for (let turn = 0; turn < 80 && host.last('match:replay') === undefined; turn += 1) {
+      host.say({ type: 'turn:pass' });
+    }
+
+    const document = host.last('match:replay')?.replay;
+    expect(document, 'the match must have ended within 80 turns').toBeDefined();
+    if (document === undefined) return;
+
+    expect(document.format).toBe('functionwars-replay');
+    expect(document.outcome).not.toBeNull();
+    expect(document.turns.length).toBeGreaterThan(0);
+    // What was done, not what was drawn: a few kilobytes, not hundreds.
+    expect(JSON.stringify(document).length).toBeLessThan(60_000);
+  });
+
+  it('reads one back and answers with the rebuilt match', () => {
+    const { game } = serverWith();
+    const host = new Client(game);
+    host.hello('Anne');
+    host.say({
+      type: 'lobby:create',
+      config: { ...DEFAULT_MATCH_CONFIG, rules: { ...DEFAULT_MATCH_CONFIG.rules, shieldTurns: 0 } },
+    });
+    host.say({ type: 'lobby:add-bot', level: 'confirme' });
+    host.say({ type: 'lobby:ready', ready: true });
+    host.say({ type: 'match:start', seed: 'relecture' });
+    for (let turn = 0; turn < 80 && host.last('match:replay') === undefined; turn += 1) {
+      host.say({ type: 'turn:pass' });
+    }
+    const document = host.last('match:replay')?.replay;
+    if (document === undefined) return;
+
+    const watcher = new Client(game);
+    watcher.hello('Curieux');
+    watcher.say({ type: 'replay:load', replay: document });
+
+    const rebuilt = watcher.last('replay:state')?.match;
+    expect(rebuilt).toBeDefined();
+    expect(rebuilt?.history).toHaveLength(document.turns.length);
+    expect(rebuilt?.outcome).toEqual(document.outcome);
+    // Every trace is there, which is what lets the client walk it with no engine.
+    expect(rebuilt?.history.filter((record) => record.trace !== null).length).toBeGreaterThan(0);
+  });
+
+  it('refuses a document from somewhere else, in French', () => {
+    const { game } = serverWith();
+    const client = new Client(game);
+    client.hello('Anne');
+    // Shaped like a replay but with a turn nobody could have played.
+    client.say({ type: 'replay:load', replay: { format: 'functionwars-replay' } as never });
+    expect(client.last('error')?.error.code).toBe('ERR_BAD_MESSAGE');
+  });
+});

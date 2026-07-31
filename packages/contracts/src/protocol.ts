@@ -10,6 +10,7 @@ import { MatchConfigSchema } from './config.js';
 import { BotLevelSchema } from './bot.js';
 import { AxisSchema, DirectionSchema, ShotRequestSchema } from './shot.js';
 import { MatchEventSchema, MatchViewSchema } from './match.js';
+import { ReplaySchema } from './replay.js';
 import { FwErrorSchema } from './errors.js';
 import { MAX_SOURCE_LENGTH } from './limits.js';
 
@@ -88,6 +89,12 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
   }),
   z.object({ type: z.literal('shot:fire'), shot: ShotRequestSchema }),
   z.object({ type: z.literal('turn:pass') }),
+  /**
+   * Read a replay back. The server rebuilds the match and answers with the
+   * finished state, whose history holds every trace — the client then walks it
+   * turn by turn without needing an engine of its own (ADR 0006, ADR 0018).
+   */
+  z.object({ type: z.literal('replay:load'), replay: ReplaySchema }),
   z.object({ type: z.literal('ping') }),
 ]);
 export type ClientMessage = z.infer<typeof ClientMessageSchema>;
@@ -125,6 +132,10 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
     ok: z.boolean(),
     error: FwErrorSchema.nullable(),
   }),
+  /** Sent to everyone when a match ends: the whole thing, in a few kilobytes. */
+  z.object({ type: z.literal('match:replay'), replay: ReplaySchema }),
+  /** Answer to `replay:load`: the rebuilt match, to be walked through. */
+  z.object({ type: z.literal('replay:state'), match: MatchViewSchema }),
   z.object({ type: z.literal('error'), error: FwErrorSchema }),
   z.object({ type: z.literal('pong') }),
 ]);

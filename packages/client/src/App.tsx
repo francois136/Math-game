@@ -6,13 +6,16 @@ import {
   type Axis,
   type ClientMessage,
   type Direction,
+  type Replay,
 } from '@fw/contracts';
 import { connect, type Transport } from './net/connection.js';
 import { initialState, reduce } from './state.js';
 import { preview as computePreview } from './preview.js';
+import { stateAt } from './replayView.js';
 import { Board } from './canvas/Board.js';
 import { Connect } from './ui/Connect.js';
 import { Lobby } from './ui/Lobby.js';
+import { ReplayViewer } from './ui/ReplayViewer.js';
 import { ShotComposer } from './ui/ShotComposer.js';
 
 const SERVER_URL =
@@ -35,6 +38,24 @@ const PREVIEW_KEY = 'fw:preview';
  * storage again: the token dies with the tab, as it should.
  */
 const SEAT_KEY = 'fw:seat';
+
+/**
+ * Save a replay to a file.
+ *
+ * A few kilobytes of JSON, built in the page and never sent anywhere: the
+ * document came from the server already, and downloading it is between the
+ * browser and the disk.
+ */
+function downloadReplay(replay: Replay | null): void {
+  if (replay === null) return;
+  const blob = new Blob([JSON.stringify(replay)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `functionwars-${replay.matchId}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 function remember(key: string, value: string | null): void {
   try {
@@ -227,7 +248,28 @@ export function App(): React.JSX.Element {
         />
       )}
 
-      {state.match !== null && (
+      {state.watching !== null && (
+        <>
+          <Board
+            match={stateAt(state.watching.match, state.watching.at)}
+            preview={{ kind: 'off' }}
+            selfId={state.playerId}
+            animate={false}
+          />
+          <ReplayViewer
+            match={state.watching.match}
+            at={state.watching.at}
+            onSeek={(to) => {
+              dispatch({ kind: 'seek', to });
+            }}
+            onClose={() => {
+              dispatch({ kind: 'stop-watching' });
+            }}
+          />
+        </>
+      )}
+
+      {state.watching === null && state.match !== null && (
         <>
           <Board
             match={state.match}
@@ -270,6 +312,29 @@ export function App(): React.JSX.Element {
               send({ type: 'turn:pass' });
             }}
           />
+
+          {state.replay !== null && (
+            <div className="rangee">
+              <button
+                type="button"
+                data-testid="telecharger-rejeu"
+                onClick={() => {
+                  downloadReplay(state.replay);
+                }}
+              >
+                Télécharger le rejeu
+              </button>
+              <button
+                type="button"
+                data-testid="revoir-rejeu"
+                onClick={() => {
+                  if (state.replay !== null) send({ type: 'replay:load', replay: state.replay });
+                }}
+              >
+                Revoir la partie
+              </button>
+            </div>
+          )}
 
           <ol className="journal" data-testid="journal">
             {state.log.map((line, index) => (

@@ -38,6 +38,14 @@ export const TurnRecordSchema = z.object({
   trace: TraceResultSchema.nullable(),
   skipped: TurnSkipReasonSchema.nullable(),
   eliminated: z.array(PlayerIdSchema),
+  /**
+   * Epoch milliseconds this turn was resolved at.
+   *
+   * Here because turn deadlines are part of the state: a replay driven by a
+   * different clock reproduces every elimination and a different `deadlineAt`,
+   * which is a replay that does not reproduce (ADR 0018).
+   */
+  atMs: z.number().int().nonnegative(),
 });
 export type TurnRecord = z.infer<typeof TurnRecordSchema>;
 
