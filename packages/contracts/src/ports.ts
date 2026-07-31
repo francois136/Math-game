@@ -3,7 +3,8 @@ import type { FwError } from './errors.js';
 import type { EvalOutcome, ExprNode, ParsedExpression } from './expression.js';
 import type { GameMap, Vec2 } from './geometry.js';
 import type { MapParams, MatchConfig, TraceParams } from './config.js';
-import type { Axis, Direction, TraceResult } from './shot.js';
+import type { BotLevel } from './bot.js';
+import type { Axis, Direction, ShotRequest, TraceResult } from './shot.js';
 import type { MatchCommand, MatchEvent, MatchState } from './match.js';
 import type { LobbyCode, MatchId, PlayerId, Seed, SessionToken, TeamId } from './ids.js';
 
@@ -171,6 +172,20 @@ export interface RulesEnginePort {
     deps: RulesDeps,
     nowMs: number,
   ): { readonly state: MatchState; readonly events: readonly MatchEvent[] };
+}
+
+// — @fw/bot ——————————————————————————————————————————————————
+
+export interface BotPort {
+  /**
+   * What this bot fires this turn. Never null: a turn has to end with
+   * something, and a bot that passed for want of a good shot would stall the
+   * match.
+   *
+   * Pure and deterministic in the match state — the draw comes from the seed
+   * and the turn index, so a replay replays the bot's moves too.
+   */
+  chooseShot(state: MatchState, botId: PlayerId, level: BotLevel, deps: RulesDeps): ShotRequest;
 }
 
 // — Ambient capabilities, always injected ——————————————————————————
